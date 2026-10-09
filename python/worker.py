@@ -40,9 +40,10 @@ def load_profile():
     profile = json.loads(Path(file).read_text(encoding="utf-8"))
     evidence = profile.get("evidence", {})
     runs = evidence.get("runs", [])
-    if profile.get("status") != "verified" or len(runs) < 20 or len(set(r.get("session") for r in runs)) < 2:
+    candidate = profile.get("status") == "candidate" and os.environ.get("ISTRAM_ACCEPTANCE_MODE") == "1"
+    if not candidate and (profile.get("status") != "verified" or len(runs) < 20 or len(set(r.get("session") for r in runs)) < 2):
         fail("ADAPTER_UNVERIFIED", "Profile needs 20 successful runs in two sessions")
-    if any(r.get("success") is not True or not r.get("reportSha256") for r in runs):
+    if not candidate and any(r.get("success") is not True or not r.get("reportSha256") for r in runs):
         fail("ADAPTER_UNVERIFIED", "Acceptance evidence is incomplete")
     exe = Path(os.environ.get("ISTRAM_PATH", r"C:\Ispol")) / "Istram.exe"
     if not exe.is_file() or digest(exe) != profile.get("binarySha256"):
@@ -152,9 +153,16 @@ def action(params):
             if new==old and recipe.get("requireArtifactChange",True):
                 fail("POSTCONDITION_FAILED","Artifact did not change; computation cannot be proved")
             after[relative]=new
+        guard=profile.get("projectGuard")
+        if not guard:
+            fail("PROJECT_GUARD_REQUIRED","Loaded project must be verified")
+        guard_control=app.window(**guard["window"]).child_window(**guard["selector"])
+        guard_control.wait("exists visible",timeout=10)
+        if guard_control.window_text() != expand(guard["expected"],params):
+            fail("WRONG_PROJECT","Postcondition project identity differs")
         if name=="open_project":
             session_file.write_text(json.dumps({"pid":app.process,"binarySha256":profile["binarySha256"]}))
-        return {"action":name,"pid":app.process,"artifacts":after,"verified":True}
+        return {"action":name,"pid":app.process,"artifacts":after,"verified":profile.get("status")=="verified"}
     except Exception as error:
         # UI changes may have occurred. Never silently retry a native action.
         fail("OUTCOME_UNCERTAIN",str(error))
@@ -218,8 +226,23 @@ def dispatch(method, params):
             "ifcopenshell":bool(importlib.util.find_spec("ifcopenshell")),"profileConfigured":bool(os.environ.get("ISTRAM_ADAPTER_PROFILE"))}
     if method=="snapshot":return snapshot()
     if method=="idle":
-        load_profile()
+        profile,_ = load_profile()
         if processes():fail("PROJECT_BUSY","Native file writes require all ISTRAM sessions to be closed")
+        root=Path(params["projectPath"]).resolve()
+        if not (root/".istram-mcp"/"copy.json").is_file():
+            fail("NOT_MANAGED_COPY","Native writes require a managed copy")
+        for change in params.get("changes",[]):
+            file=bound_file(root,change["file"])
+            rule=profile.get("writableFormats",{}).get(file.suffix.lower())
+            if not rule:
+                fail("FORMAT_UNVERIFIED","No verified writer rule for "+file.suffix)
+            raw=file.read_text(encoding=rule.get("encoding","cp1252"))
+            revision=rule.get("revisionPattern")
+            if not revision or not re.search(revision,raw,re.MULTILINE):
+                fail("FORMAT_VERSION_MISMATCH","File revision is not verified")
+            pattern=rule.get("linePattern")
+            if not pattern or not re.fullmatch(pattern,change["expected"]) or not re.fullmatch(pattern,change["replacement"]):
+                fail("CHANGE_UNVERIFIED","Line does not match verified writer rule")
         return {"idle":True}
     if method=="action":return action(params)
     if method=="ifc_validate":return validate_ifc(params)

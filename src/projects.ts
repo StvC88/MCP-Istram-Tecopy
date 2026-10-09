@@ -30,7 +30,7 @@ export type Change={file:string;line:number;expected:string;replacement:string};
 type Plan={id:string;requestId:string;fingerprint:string;status:'prepared'|'applied'|'restored'|'uncertain';changes:Change[];
   before:Record<string,string>;after:Record<string,string>;createdAt:string};
 export class ProjectStore {
-  constructor(public workspace:string,private assertIdle:()=>Promise<void>=async()=>{throw new DomainError('ADAPTER_REQUIRED','Native writes require a verified Windows adapter');}) {
+  constructor(public workspace:string,private assertIdle:(changes?:Change[],root?:string)=>Promise<void>=async()=>{throw new DomainError('ADAPTER_REQUIRED','Native writes require a verified Windows adapter');}) {
     fs.mkdirSync(workspace,{recursive:true});this.workspace=fs.realpathSync(workspace);
   }
   private project(id:string){
@@ -113,7 +113,11 @@ export class ProjectStore {
         return plan;
       }
       if(plan.status!=='prepared')throw new DomainError('RECOVERY_REQUIRED','Inspect outcome before retry');
-      await this.assertIdle();
+      await this.assertIdle(plan.changes,root);
+      for(const [relative,expectedHash] of Object.entries(plan.before)){
+        if(hash(fs.readFileSync(safeChild(root,relative)))!==expectedHash)throw new DomainError('STALE_EDIT','File changed after preparation');
+      }
+      plan.status='uncertain';atomicJson(file,plan);
       const stage:{target:string;temp:string;backup:string;bytes:Buffer}[]=[];
       for(const relative of Object.keys(plan.before)){
         const target=safeChild(root,relative),doc=readDocument(target);
@@ -125,7 +129,6 @@ export class ProjectStore {
         const bytes=encodeDocument(lines.join(''),doc),temp=target+'.'+plan.id+'.tmp';
         fs.writeFileSync(temp,bytes,{flag:'wx'});stage.push({target,temp,backup,bytes});
       }
-      plan.status='uncertain';atomicJson(file,plan);
       for(const item of stage)fs.renameSync(item.temp,item.target);
       if(!Object.entries(plan.after).every(([f,h])=>hash(fs.readFileSync(safeChild(root,f)))===h))
         throw new DomainError('VERIFY_FAILED','Write hash verification failed');
@@ -143,10 +146,12 @@ export class ProjectStore {
         const target=safeChild(root,relative),current=hash(fs.readFileSync(target));
         if(current!==beforeHash&&current!==plan.after[relative])throw new DomainError('RESTORE_CONFLICT','Copy has newer edits; restore refused');
         const backup=path.join(root,'.istram-mcp','backups',plan.id,relative);
+        if(!fs.existsSync(backup)&&current===beforeHash)continue;
         if(hash(fs.readFileSync(backup))!==beforeHash)throw new DomainError('CORRUPT_BACKUP','Backup hash mismatch');
       }
-      for(const [relative] of entries){
-        const target=safeChild(root,relative),temp=target+'.restore.tmp';
+      for(const [relative,beforeHash] of entries){
+        const target=safeChild(root,relative),temp=target+'.'+randomUUID()+'.restore.tmp';
+        if(hash(fs.readFileSync(target))===beforeHash)continue;
         fs.copyFileSync(path.join(root,'.istram-mcp','backups',plan.id,relative),temp,fs.constants.COPYFILE_EXCL);fs.renameSync(temp,target);
       }
       plan.status='restored';atomicJson(file,plan);return plan;

@@ -15,3 +15,5 @@ Postcondiciones: una comprobación explícita de texto y, cuando corresponda, ar
 La inspección session_snapshot sirve para obtener selectores reales. Ejecutar el evaluador de aceptación solo con recetas ya revisadas, en copias, con la sesión supervisada. El modo candidato debe permanecer ausente de las variables del cliente de IA.
 
 No hay un perfil certificado incluido. El motor rechaza recetas ausentes, evidencia incompleta y hash de ejecutable diferente.
+
+La escritura requiere además writableFormats: por extensión, encoding, revisionPattern y linePattern. Ambos textos de cada cambio deben coincidir con la regla revisada. No declarar reglas universales que admitan cualquier línea. Estas reglas comprueban forma y revisión; la geometría se comprueba en ISTRAM y en la aceptación.

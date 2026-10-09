@@ -15,7 +15,7 @@ const requestId=z.string().min(1).max(128);
 export function createServer(){
   const server=new McpServer({name:'istram-mcp',version:'0.2.0-rc.1'});
   const workspace=process.env.ISTRAM_WORKSPACE ?? fileURLToPath(new URL('../.local/projects',import.meta.url));
-  const projects=new ProjectStore(workspace,async()=>{await worker('idle');});
+  const projects=new ProjectStore(workspace,async(changes,root)=>{await worker('idle',{changes,projectPath:root});});
   const jobs=new Jobs(path.join(workspace,'..','jobs'));
   function register<S extends z.ZodObject>(name:string,description:string,schema:S,readOnly:boolean,run:(args:z.infer<S>)=>unknown|Promise<unknown>){
     server.registerTool(name,{description,inputSchema:schema,annotations:{readOnlyHint:readOnly,destructiveHint:!readOnly,idempotentHint:readOnly,openWorldHint:false}},
