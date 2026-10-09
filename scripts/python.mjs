@@ -1,0 +1,10 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {spawn} from 'node:child_process';
+const root=fileURLToPath(new URL('../',import.meta.url));
+const local=path.join(root,'.venv',process.platform==='win32'?'Scripts/python.exe':'bin/python');
+const python=process.env.ISTRAM_PYTHON??(fs.existsSync(local)?local:(process.platform==='win32'?'python':'python3'));
+const child=spawn(python,process.argv.slice(2),{cwd:root,stdio:'inherit',windowsHide:true});
+child.on('error',error=>{console.error(error.message);process.exitCode=1;});
+child.on('exit',code=>{process.exitCode=code??1;});

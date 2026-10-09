@@ -1,0 +1,33 @@
+name: CI
+on:
+  push:
+    branches: [main, codex/istram-stable]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        node: ['22', '24']
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r python/requirements-test.txt
+      - run: npm run test:python
+      - run: npm run smoke
+      - name: Verify interchange DXF with independent reader
+        run: python python/check_dxf.py

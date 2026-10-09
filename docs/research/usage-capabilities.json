@@ -1,0 +1,3248 @@
+{
+  "schemaVersion": 1,
+  "reviewedAt": "2026-10-09",
+  "reviewedCommit": "4c7b86add90e62fa91f628e8de965f919517dcfb",
+  "channelUrl": "https://www.youtube.com/@AlexMatosd/videos",
+  "notebookUrl": "https://notebook.google.com/notebook/66dd8f87-9726-490d-a9ce-739b73aee639",
+  "notebookTitle": "ISTRAM Clases Chile",
+  "notebookSourceInventoryVerified": true,
+  "notebookReportedSourceCount": 13,
+  "inventoryVideoCount": 120,
+  "reviewedTranscriptCount": 16,
+  "fullVideoReviewComplete": false,
+  "nativeAcceptancePassed": false,
+  "officialAutomationApiVerified": false,
+  "evidencePolicy": "Inventario de títulos != transcripción revisada != síntesis Gemini != aceptación nativa. Pasos y nombres de herramientas propuestos no son comandos oficiales.",
+  "capabilities": [
+    {
+      "id": "project_context",
+      "title": "Proyecto, sesión y dependencias",
+      "priority": "P0",
+      "nativeExecutionVerified": false,
+      "currentSupport": "partial_read_or_infrastructure",
+      "existingTools": [
+        "istram_detect",
+        "worker_health",
+        "session_snapshot",
+        "project_inspect",
+        "project_copy"
+      ],
+      "proposedTools": [
+        "project_context_read",
+        "project_dependencies_resolve"
+      ],
+      "inputs": [
+        "Ruta y archivo exactos del proyecto",
+        "Versión/hash del ejecutable y módulos comprobados",
+        "Ejes, grupos, alternativas y estado de cálculo activos"
+      ],
+      "steps": [
+        "Identificar sesión y proyecto",
+        "Resolver referencias internas y externas",
+        "Crear copia y verificar identidad antes de modificar"
+      ],
+      "acceptance": [
+        "La identidad observada coincide con la copia",
+        "No faltan dependencias requeridas",
+        "Hashes del original conservados"
+      ],
+      "risks": [
+        "El snapshot no prueba licencia ni proyecto cargado",
+        "Referencias con rutas externas pueden dejar una copia incompleta"
+      ],
+      "sources": [
+        {
+          "kind": "youtube",
+          "videoIndex": 55,
+          "url": "https://www.youtube.com/watch?v=JND_TtHAsIU",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 61,
+          "url": "https://www.youtube.com/watch?v=EgBAxnm-mF8",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 63,
+          "url": "https://www.youtube.com/watch?v=xa83f7MMTx4",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "notebooklm",
+          "title": "Clase 1",
+          "level": "gemini_summary",
+          "originalSourceVerified": false
+        },
+        {
+          "kind": "notebooklm",
+          "title": "Clase 9",
+          "level": "gemini_summary",
+          "originalSourceVerified": false
+        }
+      ]
+    },
+    {
+      "id": "coordinate_systems",
+      "title": "CRS y transformaciones",
+      "priority": "P0",
+      "nativeExecutionVerified": false,
+      "currentSupport": "partial_read_or_infrastructure",
+      "existingTools": [
+        "project_inspect"
+      ],
+      "proposedTools": [
+        "crs_read",
+        "crs_transform_plan"
+      ],
+      "inputs": [
+        "CRS origen/destino y datum vertical",
+        "Unidades XYZ, huso y hemisferio",
+        "Parámetros de transformación y puntos de control"
+      ],
+      "steps": [
+        "Leer CRS y unidades",
+        "Comprobar transformación requerida",
+        "Aplicar a copia y comparar puntos de control"
+      ],
+      "acceptance": [
+        "Residuales dentro de tolerancia del proyecto en m",
+        "CRS persistente al reabrir",
+        "Exportación mantiene posición y escala"
+      ],
+      "risks": [
+        "UTM y PTL no son intercambiables sin parámetros",
+        "No inferir CRS por el tamaño de las coordenadas"
+      ],
+      "sources": [
+        {
+          "kind": "notebooklm",
+          "title": "Clase 2",
+          "level": "gemini_summary",
+          "originalSourceVerified": false
+        },
+        {
+          "kind": "notebooklm",
+          "title": "Clase 4",
+          "level": "gemini_summary",
+          "originalSourceVerified": false
+        }
+      ]
+    },
+    {
+      "id": "cartography",
+      "title": "CAD, GIS, imágenes y nubes de puntos",
+      "priority": "P1",
+      "nativeExecutionVerified": false,
+      "currentSupport": "partial_read_or_infrastructure",
+      "existingTools": [
+        "native_records_read"
+      ],
+      "proposedTools": [
+        "cartography_import",
+        "pointcloud_filter",
+        "raster_import"
+      ],
+      "inputs": [
+        "Archivos y formatos reales",
+        "Capas/códigos y correspondencias",
+        "CRS, unidades, extensión y resolución en m"
+      ],
+      "steps": [
+        "Inspeccionar entrada y opciones de conversión",
+        "Importar y organizar capas",
+        "Conservar Z y líneas de ruptura relevantes"
+      ],
+      "acceptance": [
+        "Entidades/cotas comparadas con origen",
+        "Extensión y coordenadas correctas",
+        "Inventario de pérdidas o elementos no convertidos"
+      ],
+      "risks": [
+        "No convertir etiquetas de cota en geometría sin verificar",
+        "Capacidad y tiempo de vídeo no garantizan rendimiento en otro equipo"
+      ],
+      "sources": [
+        {
+          "kind": "youtube",
+          "videoIndex": 12,
+          "url": "https://www.youtube.com/watch?v=1czMgyLnggw",
+          "level": "transcript_reviewed",
+          "location": "00:10–01:32"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 29,
+          "url": "https://www.youtube.com/watch?v=e3HEYAvw-V4",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 47,
+          "url": "https://www.youtube.com/watch?v=WsS6ID0Vk3Y",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 59,
+          "url": "https://www.youtube.com/watch?v=Rfnpd4UZIBU",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 70,
+          "url": "https://www.youtube.com/watch?v=veI_ELOtqWA",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 74,
+          "url": "https://www.youtube.com/watch?v=j8ZadLnrAoc",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 75,
+          "url": "https://www.youtube.com/watch?v=hQdVXSmVxYw",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 76,
+          "url": "https://www.youtube.com/watch?v=K8-hUp03cX4",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 90,
+          "url": "https://www.youtube.com/watch?v=MWcnb6nefV0",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 116,
+          "url": "https://www.youtube.com/watch?v=rGQN9V0OMRY",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "notebooklm",
+          "title": "Clase 2",
+          "level": "gemini_summary",
+          "originalSourceVerified": false
+        },
+        {
+          "kind": "notebooklm",
+          "title": "Clase 3",
+          "level": "gemini_summary",
+          "originalSourceVerified": false
+        }
+      ]
+    },
+    {
+      "id": "surfaces",
+      "title": "Superficies cartográficas, MDT y TTP",
+      "priority": "P1",
+      "nativeExecutionVerified": false,
+      "currentSupport": "partial_read_or_infrastructure",
+      "existingTools": [
+        "native_records_read"
+      ],
+      "proposedTools": [
+        "surface_list",
+        "surface_priority_set",
+        "surface_triangulate",
+        "surface_clip"
+      ],
+      "inputs": [
+        "Superficies con identificador, tipo y origen",
+        "Orden de prioridad y ámbito",
+        "Contorno, rupturas e intervalo de muestreo en m"
+      ],
+      "steps": [
+        "Declarar y cargar superficies",
+        "Triangular/editar según el formato",
+        "Definir prioridad y regenerar perfiles afectados"
+      ],
+      "acceptance": [
+        "Cotas muestreadas coinciden con superficie prioritaria",
+        "Triángulos no cruzan contorno o huecos prohibidos",
+        "Dependencias invalidadas cuando cambia terreno"
+      ],
+      "risks": [
+        "TTP y superficie cartográfica no son la misma entidad",
+        "Cambiar prioridad altera cortes, rasantes y cantidades"
+      ],
+      "sources": [
+        {
+          "kind": "youtube",
+          "videoIndex": 50,
+          "url": "https://www.youtube.com/watch?v=7Ktb_TiUkFw",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 85,
+          "url": "https://www.youtube.com/watch?v=zxxDHu9Q9tg",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "notebooklm",
+          "title": "Clase 2",
+          "level": "gemini_summary",
+          "originalSourceVerified": false
+        },
+        {
+          "kind": "notebooklm",
+          "title": "Clase 3",
+          "level": "gemini_summary",
+          "originalSourceVerified": false
+        },
+        {
+          "kind": "notebooklm",
+          "title": "istram-ispol-modelado-superficies-5-pdf-free.pdf",
+          "level": "gemini_summary",
+          "originalSourceVerified": false
+        }
+      ]
+    },
+    {
+      "id": "horizontal_alignment",
+      "title": "Ejes, conexiones y ecuaciones de PK",
+      "priority": "P1",
+      "nativeExecutionVerified": false,
+      "currentSupport": "preparation_geometry_or_text_only",
+      "existingTools": [
+        "alignment_read",
+        "project_inspect",
+        "alignment_design_preview",
+        "design_package_prepare"
+      ],
+      "proposedTools": [
+        "alignment_edit",
+        "alignment_connect",
+        "station_equation_set"
+      ],
+      "inputs": [
+        "Eje/grupo/alternativa y PK en m",
+        "Rectas, radios y parámetros de clotoide en m",
+        "Conexiones, sentido y ecuaciones de PK"
+      ],
+      "steps": [
+        "Leer y verificar geometría de partida",
+        "Definir conexiones y alineaciones",
+        "Recalcular y comprobar continuidad y estaciones"
+      ],
+      "acceptance": [
+        "No hay longitudes negativas no justificadas",
+        "Continuidad geométrica y PK contrastados",
+        "Persistencia tras guardar/reabrir"
+      ],
+      "risks": [
+        "El lector ALI preserva registros desconocidos y no certifica su semántica",
+        "Los PK pueden no ser monótonos con ecuaciones de empalme"
+      ],
+      "sources": [
+        {
+          "kind": "youtube",
+          "videoIndex": 49,
+          "url": "https://www.youtube.com/watch?v=QbrE7PfHfmc",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 64,
+          "url": "https://www.youtube.com/watch?v=e_-WAvw9b8U",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 77,
+          "url": "https://www.youtube.com/watch?v=BLZOKZpl2co",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 91,
+          "url": "https://www.youtube.com/watch?v=OlYjbMw_11o",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 97,
+          "url": "https://www.youtube.com/watch?v=8QUiPiaDwaY",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 113,
+          "url": "https://www.youtube.com/watch?v=h38xTG6raB4",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 114,
+          "url": "https://www.youtube.com/watch?v=VDVPzNqKy7k",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 115,
+          "url": "https://www.youtube.com/watch?v=mY0TO1w5U8E",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "notebooklm",
+          "title": "Clase 4",
+          "level": "gemini_summary",
+          "originalSourceVerified": false
+        },
+        {
+          "kind": "notebooklm",
+          "title": "Clase 5",
+          "level": "gemini_summary",
+          "originalSourceVerified": false
+        },
+        {
+          "kind": "notebooklm",
+          "title": "Clase 9",
+          "level": "gemini_summary",
+          "originalSourceVerified": false
+        }
+      ]
+    },
+    {
+      "id": "design_checks",
+      "title": "Revisión normativa de planta y alzado",
+      "priority": "P1",
+      "nativeExecutionVerified": false,
+      "currentSupport": "partial_read_or_infrastructure",
+      "existingTools": [
+        "alignment_read",
+        "profile_read",
+        "istram_command_catalog"
+      ],
+      "proposedTools": [
+        "design_standard_configure",
+        "design_check_report"
+      ],
+      "inputs": [
+        "País, norma, edición y librería verificadas",
+        "Clase de vía y orografía",
+        "Tramos PK inicio/fin en m y velocidad en km/h"
+      ],
+      "steps": [
+        "Confirmar tablas aplicables a la versión y al proyecto",
+        "Configurar velocidades por tramos",
+        "Revisar planta/rasante y exportar incidencias"
+      ],
+      "acceptance": [
+        "Cada incidencia identifica eje/elemento/PK y criterio",
+        "Informe coincide con pantalla y revisión de tablas",
+        "Cambio de clase o velocidad actualiza resultados"
+      ],
+      "risks": [
+        "Los ejemplos históricos no son normativa vigente",
+        "Un XML no incorpora necesariamente parámetros suficientes de revisión"
+      ],
+      "sources": [
+        {
+          "kind": "youtube",
+          "videoIndex": 34,
+          "url": "https://www.youtube.com/watch?v=ehhnngNejsg",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 35,
+          "url": "https://www.youtube.com/watch?v=4phtLgZzD0E",
+          "level": "transcript_reviewed",
+          "location": "00:13–02:39; 03:47–05:30"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 36,
+          "url": "https://www.youtube.com/watch?v=dk8569Ikmjs",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 37,
+          "url": "https://www.youtube.com/watch?v=CSa3yi31W9E",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 38,
+          "url": "https://www.youtube.com/watch?v=8Ry87hSa4vc",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 39,
+          "url": "https://www.youtube.com/watch?v=tnfNlafMbds",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 40,
+          "url": "https://www.youtube.com/watch?v=s5xsoS7zs-E",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 73,
+          "url": "https://www.youtube.com/watch?v=mKDRYmgRZDA",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 88,
+          "url": "https://www.youtube.com/watch?v=UlIWxIGI7xM",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "notebooklm",
+          "title": "Clase 5",
+          "level": "gemini_summary",
+          "originalSourceVerified": false
+        },
+        {
+          "kind": "notebooklm",
+          "title": "Clase 6",
+          "level": "gemini_summary",
+          "originalSourceVerified": false
+        }
+      ]
+    },
+    {
+      "id": "vertical_alignment",
+      "title": "Rasantes y perfiles longitudinales",
+      "priority": "P1",
+      "nativeExecutionVerified": false,
+      "currentSupport": "partial_read_or_infrastructure",
+      "existingTools": [
+        "profile_read"
+      ],
+      "proposedTools": [
+        "profile_extract",
+        "profile_edit",
+        "profile_connect"
+      ],
+      "inputs": [
+        "Eje/alternativa y terreno aplicable",
+        "PK/cotas en m y pendientes con convención explícita",
+        "Tipo y parámetro de acuerdo con unidad declarada"
+      ],
+      "steps": [
+        "Extraer perfil de las superficies correctas",
+        "Diseñar/ajustar vértices y acuerdos",
+        "Recalcular y cotejar longitudinal y transversales"
+      ],
+      "acceptance": [
+        "Cotas de puntos de control y pendientes correctas",
+        "Enganches conservados",
+        "No se confunden K, Kv, radios y escalas de dibujo"
+      ],
+      "risks": [
+        "La denominación de parámetros cambia según norma y pantalla",
+        "Un perfil leído no valida gálibos ni pendientes del diseño"
+      ],
+      "sources": [
+        {
+          "kind": "youtube",
+          "videoIndex": 58,
+          "url": "https://www.youtube.com/watch?v=2KylkA1Dg4I",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "notebooklm",
+          "title": "Clase 5",
+          "level": "gemini_summary",
+          "originalSourceVerified": false
+        },
+        {
+          "kind": "notebooklm",
+          "title": "Clase 6",
+          "level": "gemini_summary",
+          "originalSourceVerified": false
+        }
+      ]
+    },
+    {
+      "id": "sections",
+      "title": "Secciones, peraltes, firmes y elementos existentes",
+      "priority": "P1",
+      "nativeExecutionVerified": false,
+      "currentSupport": "preparation_geometry_or_text_only",
+      "existingTools": [
+        "native_records_read",
+        "section_design_preview",
+        "design_package_prepare"
+      ],
+      "proposedTools": [
+        "section_template_read",
+        "section_template_set",
+        "superelevation_set",
+        "pavement_layers_set"
+      ],
+      "inputs": [
+        "Zona PK y lado según sentido del eje",
+        "Anchos/espesores en m y pendientes en % o razón declarada",
+        "Vectores, materiales, peralte y sobreanchos por tramo"
+      ],
+      "steps": [
+        "Identificar sección y códigos de cada superficie",
+        "Definir geometría/capas y reglas por PK",
+        "Generar transversales y comprobar puntos singulares"
+      ],
+      "acceptance": [
+        "Sección correcta en límites y transiciones",
+        "Espesores y orientación coherentes",
+        "Materiales y cantidades diferenciados"
+      ],
+      "risks": [
+        "Texto genérico PER/VOL no equivale a un modelo semántico",
+        "Pendiente porcentual y razón H:V no se deben mezclar"
+      ],
+      "sources": [
+        {
+          "kind": "youtube",
+          "videoIndex": 7,
+          "url": "https://www.youtube.com/watch?v=trwhsi-X3Qc",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 18,
+          "url": "https://www.youtube.com/watch?v=rM926QYQtZU",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 24,
+          "url": "https://www.youtube.com/watch?v=7ugAbJHjQiE",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 31,
+          "url": "https://www.youtube.com/watch?v=ZXcvtlZTBXw",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 51,
+          "url": "https://www.youtube.com/watch?v=PBLv10PIk9o",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 56,
+          "url": "https://www.youtube.com/watch?v=7cajvBh16QE",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 57,
+          "url": "https://www.youtube.com/watch?v=xa4u_Y1B8K8",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 62,
+          "url": "https://www.youtube.com/watch?v=G0OeNOc9hQw",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 65,
+          "url": "https://www.youtube.com/watch?v=LRnLQfiGojA",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 80,
+          "url": "https://www.youtube.com/watch?v=YiSZQl9BwaQ",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 95,
+          "url": "https://www.youtube.com/watch?v=IFETHKKP6Ww",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 96,
+          "url": "https://www.youtube.com/watch?v=zevesBrU05c",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 109,
+          "url": "https://www.youtube.com/watch?v=ivzPOYphCSk",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 105,
+          "url": "https://www.youtube.com/watch?v=QdWUCwqvvys",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "notebooklm",
+          "title": "Clase 6",
+          "level": "gemini_summary",
+          "originalSourceVerified": false
+        },
+        {
+          "kind": "notebooklm",
+          "title": "Clase 7",
+          "level": "gemini_summary",
+          "originalSourceVerified": false
+        }
+      ]
+    },
+    {
+      "id": "slopes",
+      "title": "Taludes, banquetas y líneas frontera",
+      "priority": "P1",
+      "nativeExecutionVerified": false,
+      "currentSupport": "partial_read_or_infrastructure",
+      "existingTools": [
+        "native_records_read"
+      ],
+      "proposedTools": [
+        "slope_vectors_set",
+        "slope_transition_set",
+        "boundary_line_define"
+      ],
+      "inputs": [
+        "Ejes y lados según su orientación",
+        "Vectores con punto de enganche y unidades en m",
+        "Estratos, intervalos PK y líneas frontera guardadas"
+      ],
+      "steps": [
+        "Definir talud paramétrico/vectorial y transiciones",
+        "Resolver encuentro con terreno y otros corredores",
+        "Guardar/cargar frontera y recalcular con enlace requerido"
+      ],
+      "acceptance": [
+        "Sin solapes no previstos entre corredores",
+        "Último vector alcanza terreno",
+        "Banquetas y cambios de material comprobados en 3D y secciones"
+      ],
+      "risks": [
+        "Editar una frontera exige redefinirla antes de calcular",
+        "Un vector corto puede no intersectar el terreno"
+      ],
+      "sources": [
+        {
+          "kind": "youtube",
+          "videoIndex": 6,
+          "url": "https://www.youtube.com/watch?v=xJrA6tkM0Rw",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 10,
+          "url": "https://www.youtube.com/watch?v=56HW-VDILtg",
+          "level": "transcript_reviewed",
+          "location": "00:26–01:11; 01:19–01:45"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 11,
+          "url": "https://www.youtube.com/watch?v=tlfLCi7Qsx0",
+          "level": "transcript_reviewed",
+          "location": "00:17–01:58"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 13,
+          "url": "https://www.youtube.com/watch?v=Xx9Jak1SJSQ",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 14,
+          "url": "https://www.youtube.com/watch?v=rm7dq1rkITU",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 22,
+          "url": "https://www.youtube.com/watch?v=75pVIBIBBz4",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 23,
+          "url": "https://www.youtube.com/watch?v=34kbdTkYUkk",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 102,
+          "url": "https://www.youtube.com/watch?v=GyPHb9XbhoY",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "notebooklm",
+          "title": "Clase 7",
+          "level": "gemini_summary",
+          "originalSourceVerified": false
+        },
+        {
+          "kind": "notebooklm",
+          "title": "istram-ispol-modelado-superficies-5-pdf-free.pdf",
+          "level": "gemini_summary",
+          "originalSourceVerified": false
+        }
+      ]
+    },
+    {
+      "id": "grading",
+      "title": "Explanaciones, plataformas, balsas y embalses",
+      "priority": "P1",
+      "nativeExecutionVerified": false,
+      "currentSupport": "partial_read_or_infrastructure",
+      "existingTools": [
+        "native_records_read"
+      ],
+      "proposedTools": [
+        "grading_define",
+        "grading_generate",
+        "reservoir_capacity_report"
+      ],
+      "inputs": [
+        "Polilínea exterior cerrada y cotas en m",
+        "Superficie base/cartográfica y taludes",
+        "Vectores de corte/relleno, materiales y muestreo en m"
+      ],
+      "steps": [
+        "Declarar geometría de plataforma y contorno",
+        "Generar geometría y TTP",
+        "Integrar por recorte o método expresamente elegido"
+      ],
+      "acceptance": [
+        "Plataformas multinivel y límites correctos",
+        "Sin huecos o solapes imprevistos",
+        "Área en m² y volumen en m³ conciliados"
+      ],
+      "risks": [
+        "No sustituir una plataforma multinivel por cota única",
+        "No fusionar automáticamente superficies si basta recortar"
+      ],
+      "sources": [
+        {
+          "kind": "youtube",
+          "videoIndex": 5,
+          "url": "https://www.youtube.com/watch?v=J3ffkF9h7XQ",
+          "level": "transcript_reviewed",
+          "location": "00:14–02:26; 03:24–04:24"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 53,
+          "url": "https://www.youtube.com/watch?v=1XJDH7OrTVc",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 83,
+          "url": "https://www.youtube.com/watch?v=YMlfNP9sT3k",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 104,
+          "url": "https://www.youtube.com/watch?v=w87jAZYKzPY",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 117,
+          "url": "https://www.youtube.com/watch?v=6UKZAnGK0kU",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 118,
+          "url": "https://www.youtube.com/watch?v=hMayGYK2BgM",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "notebooklm",
+          "title": "istram-ispol-modelado-superficies-5-pdf-free.pdf",
+          "level": "gemini_summary",
+          "originalSourceVerified": false
+        }
+      ]
+    },
+    {
+      "id": "drainage",
+      "title": "Cunetas, ODT, subdrenes y defensas",
+      "priority": "P2",
+      "nativeExecutionVerified": false,
+      "currentSupport": "preparation_geometry_or_text_only",
+      "existingTools": [
+        "native_records_read",
+        "drainage_design_preview",
+        "section_design_preview",
+        "design_package_prepare"
+      ],
+      "proposedTools": [
+        "drainage_define",
+        "odt_place",
+        "drainage_quantities"
+      ],
+      "inputs": [
+        "Eje/PK, lado, posición XYZ y orientación",
+        "Sección, dimensiones y recubrimientos en m",
+        "Materiales y datos hidráulicos validados por especialista"
+      ],
+      "steps": [
+        "Definir geometría de cuneta/ODT y ubicación",
+        "Integrar con sección y movimiento de tierras",
+        "Generar mediciones, replanteo y BIM por elemento"
+      ],
+      "acceptance": [
+        "Hueco de obra descontado sin doble cómputo",
+        "Coordenadas y emboquilles contrastados",
+        "Clasificación/PSETs y cantidades correctos"
+      ],
+      "risks": [
+        "Modelado geométrico no prueba dimensionamiento hidráulico",
+        "ODT es fuente consultada vía NotebookLM; vídeo sin transcripción accesible"
+      ],
+      "sources": [
+        {
+          "kind": "youtube",
+          "videoIndex": 9,
+          "url": "https://www.youtube.com/watch?v=hlapFNA5q4A",
+          "level": "transcript_reviewed"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 28,
+          "url": "https://www.youtube.com/watch?v=xH1moH11JYg",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 68,
+          "url": "https://www.youtube.com/watch?v=kYBwoBuFHYk",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 82,
+          "url": "https://www.youtube.com/watch?v=zuzW7S07WQc",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 89,
+          "url": "https://www.youtube.com/watch?v=ZaTB2EHjXL4",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 94,
+          "url": "https://www.youtube.com/watch?v=r5P34-pjx5M",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 103,
+          "url": "https://www.youtube.com/watch?v=-8XOGG9_b3Y",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 108,
+          "url": "https://www.youtube.com/watch?v=fO0B2T6ZRhw",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 110,
+          "url": "https://www.youtube.com/watch?v=kMFC4KEs_Vk",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 111,
+          "url": "https://www.youtube.com/watch?v=Z6oHTid-dsI",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 112,
+          "url": "https://www.youtube.com/watch?v=WBNQ4XaGJes",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 120,
+          "url": "https://www.youtube.com/watch?v=r0dvvEMhlAo",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "notebooklm",
+          "title": "ODT (Obra de Drenaje Transversal) - ISTRAM",
+          "level": "gemini_summary",
+          "originalSourceVerified": false
+        }
+      ]
+    },
+    {
+      "id": "pipelines",
+      "title": "Tuberías, pozos y zanjas multicapa",
+      "priority": "P2",
+      "nativeExecutionVerified": false,
+      "currentSupport": "preparation_geometry_or_text_only",
+      "existingTools": [
+        "profile_read",
+        "native_records_read",
+        "drainage_design_preview",
+        "design_package_prepare"
+      ],
+      "proposedTools": [
+        "pipeline_profile_set",
+        "trench_template_set",
+        "manhole_place"
+      ],
+      "inputs": [
+        "Eje y rasante con saltos explícitos",
+        "Diámetros/espesores y offsets XY en m",
+        "Superficies ordenadas, zanja y materiales de protección"
+      ],
+      "steps": [
+        "Priorizar superficie vial sobre terreno donde corresponde",
+        "Encadenar rasante y segmentos verticales",
+        "Definir ductos/pozos/materiales y calcular"
+      ],
+      "acceptance": [
+        "Tapas y excavación siguen la superficie objetivo",
+        "Saltos y cotas de tubo contrastados",
+        "Cinta de advertencia clasificada por su función real"
+      ],
+      "risks": [
+        "No calcular pendiente convencional en el salto vertical",
+        "Nombre interno tubo no justifica exportar una cinta como tubería"
+      ],
+      "sources": [
+        {
+          "kind": "youtube",
+          "videoIndex": 26,
+          "url": "https://www.youtube.com/watch?v=dHNxb7dFvGg",
+          "level": "transcript_reviewed",
+          "location": "00:54–03:04; 07:36–09:19"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 41,
+          "url": "https://www.youtube.com/watch?v=DkuxFOa4m1k",
+          "level": "transcript_reviewed",
+          "location": "01:30–03:54; 04:30–04:57"
+        },
+        {
+          "kind": "notebooklm",
+          "title": "Clase 8",
+          "level": "gemini_summary",
+          "originalSourceVerified": false
+        }
+      ]
+    },
+    {
+      "id": "rail",
+      "title": "Ferrocarril, escapes y catenarias",
+      "priority": "P2",
+      "nativeExecutionVerified": false,
+      "currentSupport": "partial_read_or_infrastructure",
+      "existingTools": [
+        "alignment_read",
+        "profile_read"
+      ],
+      "proposedTools": [
+        "rail_turnout_place",
+        "rail_crossover_generate",
+        "rail_layers_set",
+        "catenary_place"
+      ],
+      "inputs": [
+        "Ejes, entrevía y desplazamientos con signo en m",
+        "Catálogo y orientación de aparatos de vía",
+        "Balasto/capa de forma, puntos de paso y tramos PK"
+      ],
+      "steps": [
+        "Preparar sector de doble vía y superficie de balasto",
+        "Conectar dos desvíos respetando sentidos",
+        "Encadenar rasante y recalcular plataforma"
+      ],
+      "acceptance": [
+        "Conexiones continuas con las dos vías",
+        "Sin duplicar balasto ni materiales",
+        "Aparatos y gálibos verificados por especialista"
+      ],
+      "risks": [
+        "Los códigos de conexión del tutorial son dependientes de versión",
+        "No inferir orientación a partir del número de eje"
+      ],
+      "sources": [
+        {
+          "kind": "youtube",
+          "videoIndex": 8,
+          "url": "https://www.youtube.com/watch?v=21L1EojJZtE",
+          "level": "transcript_reviewed",
+          "location": "00:24–01:29; 01:32–03:58; 05:41–06:06"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 25,
+          "url": "https://www.youtube.com/watch?v=5p8IOIn2OQ8",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 32,
+          "url": "https://www.youtube.com/watch?v=FC7RSAVPHJ4",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 69,
+          "url": "https://www.youtube.com/watch?v=E_VL495p-N0",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 86,
+          "url": "https://www.youtube.com/watch?v=JE1zz_Y1olc",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 106,
+          "url": "https://www.youtube.com/watch?v=hbF4aHhbkPc",
+          "level": "inventory_only"
+        }
+      ]
+    },
+    {
+      "id": "tunnels",
+      "title": "Túneles, bóvedas, revestimientos y fases",
+      "priority": "P2",
+      "nativeExecutionVerified": false,
+      "currentSupport": "preparation_geometry_or_text_only",
+      "existingTools": [
+        "native_records_read",
+        "section_design_preview",
+        "design_package_prepare"
+      ],
+      "proposedTools": [
+        "tunnel_section_set",
+        "tunnel_lining_set",
+        "tunnel_progress_compare"
+      ],
+      "inputs": [
+        "Eje/rasante y zonas PK en m",
+        "Vectores de excavación, bóveda y contrabóveda",
+        "Espesores/materiales, fases y geometría medida"
+      ],
+      "steps": [
+        "Definir sección paramétrica/vectorial y transiciones",
+        "Calcular excavación y revestimientos separados",
+        "Comparar teórico/ejecutado por fase y exportar"
+      ],
+      "acceptance": [
+        "Revestimiento presente y espesor contrastado",
+        "Sin huecos en transiciones/intersecciones",
+        "Sobre/subexcavación cuantificada con método y tolerancia"
+      ],
+      "risks": [
+        "Detalle del vídeo vectorial pendiente por falta de transcripción",
+        "No certificar continuidad o gálibos por apariencia visual"
+      ],
+      "sources": [
+        {
+          "kind": "youtube",
+          "videoIndex": 4,
+          "url": "https://www.youtube.com/watch?v=o482XpZBFB8",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 20,
+          "url": "https://www.youtube.com/watch?v=rayfchBt-fs",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 46,
+          "url": "https://www.youtube.com/watch?v=Su4E3jKj8zU",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 67,
+          "url": "https://www.youtube.com/watch?v=A9FPT9n0Myc",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 92,
+          "url": "https://www.youtube.com/watch?v=NpmMOw2gIKw",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 99,
+          "url": "https://www.youtube.com/watch?v=vjYadmPueoQ",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 119,
+          "url": "https://www.youtube.com/watch?v=ZjLUXHiim10",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "notebooklm",
+          "title": "Clase 8",
+          "level": "gemini_summary",
+          "originalSourceVerified": false
+        },
+        {
+          "kind": "notebooklm",
+          "title": "WEBINAR SE SEGUIMIENTO DE OBRAS EJECUTADA",
+          "level": "gemini_summary",
+          "originalSourceVerified": false
+        }
+      ]
+    },
+    {
+      "id": "structures",
+      "title": "Muros, cajones, puentes y cimentaciones",
+      "priority": "P2",
+      "nativeExecutionVerified": false,
+      "currentSupport": "preparation_geometry_or_text_only",
+      "existingTools": [
+        "native_records_read",
+        "section_design_preview",
+        "design_package_prepare"
+      ],
+      "proposedTools": [
+        "wall_rule_set",
+        "box_section_place",
+        "structure_surface_integrate"
+      ],
+      "inputs": [
+        "Eje/línea y tramo PK en m",
+        "Dimensiones, altura variable y reglas por rango",
+        "Superficies losa/muros y relación con terreno"
+      ],
+      "steps": [
+        "Definir sección y reglas de colocación",
+        "Integrar superficies con prioridades explícitas",
+        "Regenerar cortes/cantidades y generar BIM"
+      ],
+      "acceptance": [
+        "Losa/muro alteran el terreno como se pretende",
+        "Sin huecos o doble cómputo",
+        "Modelo y cantidades concuerdan con sección"
+      ],
+      "risks": [
+        "El cajón del vídeo es una simplificación geométrica",
+        "No equivale a cálculo estructural resistente"
+      ],
+      "sources": [
+        {
+          "kind": "youtube",
+          "videoIndex": 16,
+          "url": "https://www.youtube.com/watch?v=VHJoo3ggt0I",
+          "level": "transcript_reviewed",
+          "location": "00:14–02:42"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 17,
+          "url": "https://www.youtube.com/watch?v=z0kFCXbBu9g",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 19,
+          "url": "https://www.youtube.com/watch?v=233KzpZRujE",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 21,
+          "url": "https://www.youtube.com/watch?v=etPmNHYvVBc",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 27,
+          "url": "https://www.youtube.com/watch?v=jVuRGK3mEtY",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 45,
+          "url": "https://www.youtube.com/watch?v=Z_m-_uB36Os",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 81,
+          "url": "https://www.youtube.com/watch?v=Qr7-6ot2pU4",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 84,
+          "url": "https://www.youtube.com/watch?v=jYfJFFAVdtU",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "notebooklm",
+          "title": "Clase 7",
+          "level": "gemini_summary",
+          "originalSourceVerified": false
+        }
+      ]
+    },
+    {
+      "id": "quantities",
+      "title": "Cubicaciones por perfiles, prismas y parcelas",
+      "priority": "P1",
+      "nativeExecutionVerified": false,
+      "currentSupport": "partial_read_or_infrastructure",
+      "existingTools": [
+        "native_records_read"
+      ],
+      "proposedTools": [
+        "quantity_profiles",
+        "quantity_prisms",
+        "quantity_parcels"
+      ],
+      "inputs": [
+        "Superficie inicial/final y contorno",
+        "Método y resolución/intervalo en m",
+        "Eje/línea persistente y convención desmonte/terraplén"
+      ],
+      "steps": [
+        "Identificar y guardar definición de medición",
+        "Ejecutar método explícito",
+        "Generar informe y perfiles o mapa justificativo"
+      ],
+      "acceptance": [
+        "Área m² y volumen m³ con método reproducible",
+        "Refinamiento de muestreo y tolerancia documentados",
+        "Materiales y límites conciliados con ISTRAM"
+      ],
+      "risks": [
+        "Título del vídeo prismas y transcripción difieren: contrastar GUI",
+        "Una línea temporal perdida impide repetir la medición"
+      ],
+      "sources": [
+        {
+          "kind": "youtube",
+          "videoIndex": 1,
+          "url": "https://www.youtube.com/watch?v=b9D9_1NOe7A",
+          "level": "transcript_reviewed",
+          "location": "00:09–01:17"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 3,
+          "url": "https://www.youtube.com/watch?v=GQyueuDo5Yk",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 52,
+          "url": "https://www.youtube.com/watch?v=RcBY0lW738U",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 101,
+          "url": "https://www.youtube.com/watch?v=UAWsLkvCvEw",
+          "level": "transcript_reviewed",
+          "location": "00:06–00:50; 01:49–02:57"
+        },
+        {
+          "kind": "notebooklm",
+          "title": "istram-ispol-modelado-superficies-5-pdf-free.pdf",
+          "level": "gemini_summary",
+          "originalSourceVerified": false
+        }
+      ]
+    },
+    {
+      "id": "construction_monitoring",
+      "title": "Seguimiento y comparación de ejecutado",
+      "priority": "P2",
+      "nativeExecutionVerified": false,
+      "currentSupport": "partial_read_or_infrastructure",
+      "existingTools": [
+        "native_records_read"
+      ],
+      "proposedTools": [
+        "asbuilt_import",
+        "construction_compare",
+        "progress_report"
+      ],
+      "inputs": [
+        "Proyecto teórico y levantamiento fechado",
+        "CRS y unidades compatibles",
+        "Método de medición, fases y tolerancias en m/m³"
+      ],
+      "steps": [
+        "Registrar procedencia y fecha del levantamiento",
+        "Comparar geometría/cantidades por ámbito",
+        "Emitir avance y discrepancias con evidencia"
+      ],
+      "acceptance": [
+        "Distinguir periodo medido de acumulado",
+        "No duplicar certificaciones",
+        "Tolerancias y resultados conciliados con datos de campo"
+      ],
+      "risks": [
+        "Avance temporal no se deduce de un IFC sin fecha",
+        "No convertir automáticamente una medición en certificación contractual"
+      ],
+      "sources": [
+        {
+          "kind": "youtube",
+          "videoIndex": 42,
+          "url": "https://www.youtube.com/watch?v=ocwWjiR_9o0",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 79,
+          "url": "https://www.youtube.com/watch?v=G58_cMkgzyQ",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 87,
+          "url": "https://www.youtube.com/watch?v=jJGYDRbCec0",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "notebooklm",
+          "title": "WEBINAR SE SEGUIMIENTO DE OBRAS EJECUTADA",
+          "level": "gemini_summary",
+          "originalSourceVerified": false
+        }
+      ]
+    },
+    {
+      "id": "drawings",
+      "title": "Planos, guitarras, cajetines y laminado",
+      "priority": "P1",
+      "nativeExecutionVerified": false,
+      "currentSupport": "preparation_geometry_or_text_only",
+      "existingTools": [
+        "section_design_preview",
+        "design_package_prepare"
+      ],
+      "proposedTools": [
+        "drawing_template_set",
+        "drawing_generate",
+        "sheet_export"
+      ],
+      "inputs": [
+        "Eje/tramo y plantilla identificados",
+        "Escalas horizontal/vertical y unidades",
+        "Campos de cajetín, PK por hoja y numeración"
+      ],
+      "steps": [
+        "Vincular atributos de plantilla y guitarra",
+        "Generar/paginar planos",
+        "Exportar y verificar hojas y rótulos"
+      ],
+      "acceptance": [
+        "PK inicial/final coincide con contenido de cada hoja",
+        "Numeración y escalas correctas",
+        "PDF/DWG legibles y correspondientes al último cálculo"
+      ],
+      "risks": [
+        "No fijar números de campo del vídeo para todas las plantillas",
+        "Un plano existente puede pertenecer a cálculo anterior"
+      ],
+      "sources": [
+        {
+          "kind": "youtube",
+          "videoIndex": 2,
+          "url": "https://www.youtube.com/watch?v=EMouWF1Y3jg",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 15,
+          "url": "https://www.youtube.com/watch?v=3xE3bsCv5R0",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 48,
+          "url": "https://www.youtube.com/watch?v=dXMxKQbx814",
+          "level": "transcript_reviewed",
+          "location": "00:36–01:24; 03:25–06:49"
+        },
+        {
+          "kind": "notebooklm",
+          "title": "Clase 6",
+          "level": "gemini_summary",
+          "originalSourceVerified": false
+        },
+        {
+          "kind": "notebooklm",
+          "title": "Clase 7",
+          "level": "gemini_summary",
+          "originalSourceVerified": false
+        }
+      ]
+    },
+    {
+      "id": "stakeout",
+      "title": "Replanteo y listados XYZ",
+      "priority": "P1",
+      "nativeExecutionVerified": false,
+      "currentSupport": "not_implemented",
+      "existingTools": [],
+      "proposedTools": [
+        "stakeout_report"
+      ],
+      "inputs": [
+        "Eje, superficie, código y lado observados",
+        "PK inicio/fin e intervalo en m",
+        "CRS/unidades y nombre de salida único"
+      ],
+      "steps": [
+        "Seleccionar código real de punto de sección",
+        "Generar listado de coordenadas",
+        "Normalizar encabezados y comprobar puntos de control"
+      ],
+      "acceptance": [
+        "XYZ y PK coinciden con sección calculada",
+        "No se omiten puntos singulares requeridos",
+        "No se sobrescribe otro código/superficie"
+      ],
+      "risks": [
+        "Código oculto en dibujo puede existir en la sección",
+        "Reinsertar y confirmar eje antes de generar el listado"
+      ],
+      "sources": [
+        {
+          "kind": "youtube",
+          "videoIndex": 44,
+          "url": "https://www.youtube.com/watch?v=w0nD9lRPe10",
+          "level": "transcript_reviewed",
+          "location": "01:07–03:38; 04:13–05:04"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 60,
+          "url": "https://www.youtube.com/watch?v=fl4XHoX-CWY",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "notebooklm",
+          "title": "Clase 7",
+          "level": "gemini_summary",
+          "originalSourceVerified": false
+        }
+      ]
+    },
+    {
+      "id": "bim",
+      "title": "Configuración BIM, clases, PSETs y exportación IFC",
+      "priority": "P0",
+      "nativeExecutionVerified": false,
+      "currentSupport": "partial_read_or_infrastructure",
+      "existingTools": [
+        "ifc_entity_types",
+        "ifc_validate",
+        "operation_start"
+      ],
+      "proposedTools": [
+        "bim_scope_read",
+        "bim_properties_set",
+        "bim_export_configure",
+        "bim_acceptance_report"
+      ],
+      "inputs": [
+        "Proyecto calculado y árbol BIM generado",
+        "Ámbito explícito: nodos/ejes/grupos/elementos",
+        "Esquema, CRS/unidades, clases y propiedades tipadas"
+      ],
+      "steps": [
+        "Confirmar cálculo vigente y selección",
+        "Asignar clases, tipos y PSETs por entidad aplicable",
+        "Generar/exportar y contrastar archivo y modelo fuente"
+      ],
+      "acceptance": [
+        "Productos esperados y representaciones presentes",
+        "Unidades, georreferencia y propiedades con valores correctos",
+        "Cantidades y geometría dentro de tolerancias del proyecto"
+      ],
+      "risks": [
+        "ifc_validate valida reglas y existencia de PSETs, no valores o completitud del modelo",
+        "La existencia de archivo/hash nuevo no certifica semántica"
+      ],
+      "sources": [
+        {
+          "kind": "youtube",
+          "videoIndex": 78,
+          "url": "https://www.youtube.com/watch?v=-8yDh_lXvL0",
+          "level": "transcript_reviewed",
+          "location": "01:59–04:19; 04:41–05:52; 08:08–09:28"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 100,
+          "url": "https://www.youtube.com/watch?v=Rm1KcXlc2ZY",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "notebooklm",
+          "title": "RCEclass",
+          "level": "gemini_summary",
+          "originalSourceVerified": false
+        },
+        {
+          "kind": "notebooklm",
+          "title": "Clase 1",
+          "level": "gemini_summary",
+          "originalSourceVerified": false
+        },
+        {
+          "kind": "notebooklm",
+          "title": "ODT (Obra de Drenaje Transversal) - ISTRAM",
+          "level": "gemini_summary",
+          "originalSourceVerified": false
+        }
+      ]
+    },
+    {
+      "id": "interoperability",
+      "title": "Intercambio CAD, LandXML y federación CDE",
+      "priority": "P2",
+      "nativeExecutionVerified": false,
+      "currentSupport": "partial_read_or_infrastructure",
+      "existingTools": [
+        "ifc_validate"
+      ],
+      "proposedTools": [
+        "landxml_import",
+        "landxml_export",
+        "cad_export",
+        "federation_package"
+      ],
+      "inputs": [
+        "Receptor y versiones compatibles",
+        "Selección por disciplina/eje/elemento",
+        "CRS/unidades y formatos de terreno/modelo/documentos"
+      ],
+      "steps": [
+        "Exportar terreno y elementos con ámbito registrado",
+        "Preparar paquete con manifiesto y hashes",
+        "Abrir en receptor y revisar posición y propiedades"
+      ],
+      "acceptance": [
+        "Coincidencia de puntos de control entre aplicaciones",
+        "Elementos seleccionables y propiedades conservadas",
+        "Pérdidas y conversiones registradas"
+      ],
+      "risks": [
+        "Configuración de Infraworks/Navisworks del tutorial es histórica",
+        "Federación y colisiones en CDE no las implementa el MCP actual"
+      ],
+      "sources": [
+        {
+          "kind": "youtube",
+          "videoIndex": 33,
+          "url": "https://www.youtube.com/watch?v=HX7g2Ish_AA",
+          "level": "transcript_reviewed",
+          "location": "00:06–02:42; 05:21–06:52"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 43,
+          "url": "https://www.youtube.com/watch?v=xb7cprgiuyE",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 93,
+          "url": "https://www.youtube.com/watch?v=5RMeG6ypUU0",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "notebooklm",
+          "title": "Clase 2",
+          "level": "gemini_summary",
+          "originalSourceVerified": false
+        },
+        {
+          "kind": "notebooklm",
+          "title": "Clase 3",
+          "level": "gemini_summary",
+          "originalSourceVerified": false
+        }
+      ]
+    },
+    {
+      "id": "visualization",
+      "title": "Virtual 3D y visualización externa",
+      "priority": "P2",
+      "nativeExecutionVerified": false,
+      "currentSupport": "not_implemented",
+      "existingTools": [],
+      "proposedTools": [
+        "view_model",
+        "visualization_export"
+      ],
+      "inputs": [
+        "Modelo calculado y alcance de visualización",
+        "Materiales y formatos compatibles",
+        "CRS/escala y aplicación receptora"
+      ],
+      "steps": [
+        "Generar representación 3D",
+        "Exportar hacia visualizador compatible",
+        "Comparar escala, origen y objetos visibles"
+      ],
+      "acceptance": [
+        "Modelo visible sin desplazamiento o escala errónea",
+        "No faltan elementos del ámbito",
+        "La imagen mantiene vínculo con revisión de modelo"
+      ],
+      "risks": [
+        "Render fotorrealista no valida diseño ni cantidades",
+        "No confundir vídeo de demostración con receta reproducible"
+      ],
+      "sources": [
+        {
+          "kind": "youtube",
+          "videoIndex": 54,
+          "url": "https://www.youtube.com/watch?v=BYKVdW0_y08",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 66,
+          "url": "https://www.youtube.com/watch?v=lI528yDtrN8",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 71,
+          "url": "https://www.youtube.com/watch?v=LD5l_7MP5cc",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 72,
+          "url": "https://www.youtube.com/watch?v=fFCVxE69YrE",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 98,
+          "url": "https://www.youtube.com/watch?v=e6-Q1q2xkPs",
+          "level": "inventory_only"
+        },
+        {
+          "kind": "youtube",
+          "videoIndex": 107,
+          "url": "https://www.youtube.com/watch?v=bBF103hmLI0",
+          "level": "inventory_only"
+        }
+      ]
+    },
+    {
+      "id": "road_furniture",
+      "title": "Señalización y equipamiento vial",
+      "priority": "P2",
+      "nativeExecutionVerified": false,
+      "currentSupport": "not_implemented",
+      "existingTools": [],
+      "proposedTools": [
+        "road_furniture_place"
+      ],
+      "inputs": [
+        "Eje/PK, lado y posición XYZ en m",
+        "Catálogo, orientación y tipo de objeto",
+        "Clase IFC y propiedades por función"
+      ],
+      "steps": [
+        "Identificar catálogo y reglas de colocación",
+        "Colocar por geometría y tramo",
+        "Generar representación y exportar atributos"
+      ],
+      "acceptance": [
+        "Ubicación y orientación contrastadas",
+        "Objetos esperados presentes en exportación",
+        "Clasificación conforme al objeto real"
+      ],
+      "risks": [
+        "Procedimiento identificado solo por título de vídeo",
+        "Una instancia 3D no demuestra cumplimiento de señalización"
+      ],
+      "sources": [
+        {
+          "kind": "youtube",
+          "videoIndex": 30,
+          "url": "https://www.youtube.com/watch?v=2Q4eJ7EGzng",
+          "level": "inventory_only"
+        }
+      ]
+    },
+    {
+      "id": "files_batch",
+      "title": "Edición por lotes de archivos asociados a elementos",
+      "priority": "P0",
+      "nativeExecutionVerified": false,
+      "currentSupport": "preparation_geometry_or_text_only",
+      "existingTools": [
+        "project_prepare_batch",
+        "project_apply_changes",
+        "project_restore_changes",
+        "project_changes_preview"
+      ],
+      "proposedTools": [
+        "element_manifest_import",
+        "native_parameter_rules"
+      ],
+      "inputs": [
+        "Listado con elementId único y archivos relativos a la copia",
+        "Por cambio: línea, texto esperado y sustitución revisados",
+        "Máximo 1000 elementos y 10000 cambios de entrada, revisión de formato/encoding"
+      ],
+      "steps": [
+        "Exportar listado e identificar archivos compartidos",
+        "Preparar lote y revisar manifiesto/diff/hashes",
+        "Aplicar con guardia de formato y sesión, reabrir/calcular/contrastar y restaurar si corresponde"
+      ],
+      "acceptance": [
+        "Los 350 elementos de prueba se conservan identificados",
+        "Cambios idénticos compartidos se aplican una vez y conflictos se rechazan",
+        "Original intacto; todos los cambios y recuperación verificados"
+      ],
+      "risks": [
+        "La prueba de 350 elementos es sintética y no demuestra 350 elementos nativos",
+        "No todos los archivos son texto ni los formatos están documentados públicamente"
+      ],
+      "sources": [
+        {
+          "kind": "user_material",
+          "title": "API DE ISTRAM, texto y captura aportados por el usuario; aplicación atribuida a Luis Briceño",
+          "level": "user_supplied_description",
+          "originalSourceVerified": false
+        }
+      ]
+    }
+  ],
+  "videos": [
+    {
+      "index": 1,
+      "video_id": "b9D9_1NOe7A",
+      "title": "Cómo cubicar acopios por perfiles en Istram",
+      "url": "https://www.youtube.com/watch?v=b9D9_1NOe7A",
+      "reviewLevel": "transcript_reviewed",
+      "transcriptAccess": "available",
+      "location": "00:09–01:17",
+      "finding": "Dos superficies, contorno, intervalo de perfiles y banda de búsqueda; guardar la línea/EDM para conservar la definición.",
+      "capabilityIds": [
+        "quantities"
+      ]
+    },
+    {
+      "index": 2,
+      "video_id": "EMouWF1Y3jg",
+      "title": "Cómo ajustar la separación entre láminas en ISTRAM",
+      "url": "https://www.youtube.com/watch?v=EMouWF1Y3jg",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "drawings"
+      ]
+    },
+    {
+      "index": 3,
+      "video_id": "GQyueuDo5Yk",
+      "title": "Volumen de acopios y BIM",
+      "url": "https://www.youtube.com/watch?v=GQyueuDo5Yk",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "quantities"
+      ]
+    },
+    {
+      "index": 4,
+      "video_id": "o482XpZBFB8",
+      "title": "Que no falte el revestimiento del túnel | ISTRAM TIP",
+      "url": "https://www.youtube.com/watch?v=o482XpZBFB8",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "tunnels"
+      ]
+    },
+    {
+      "index": 5,
+      "video_id": "J3ffkF9h7XQ",
+      "title": "Explanaciones con plataformas a distintos niveles",
+      "url": "https://www.youtube.com/watch?v=J3ffkF9h7XQ",
+      "reviewLevel": "transcript_reviewed",
+      "transcriptAccess": "available",
+      "location": "00:14–02:26; 03:24–04:24",
+      "finding": "Declarar superficie cartográfica y MDT, contorno cerrado y vectores de corte/relleno; generar TTP y recortar el terreno por la explanación sin fusionar obligatoriamente.",
+      "capabilityIds": [
+        "grading"
+      ]
+    },
+    {
+      "index": 6,
+      "video_id": "xJrA6tkM0Rw",
+      "title": "Revestimiento de terraplén | Istram | Civil 3D",
+      "url": "https://www.youtube.com/watch?v=xJrA6tkM0Rw",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "slopes"
+      ]
+    },
+    {
+      "index": 7,
+      "video_id": "trwhsi-X3Qc",
+      "title": "IstramTIP | Cómo mantener horizontal el separador central",
+      "url": "https://www.youtube.com/watch?v=trwhsi-X3Qc",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "sections"
+      ]
+    },
+    {
+      "index": 8,
+      "video_id": "21L1EojJZtE",
+      "title": "Escape ferroviario en doble vía | Istram",
+      "url": "https://www.youtube.com/watch?v=21L1EojJZtE",
+      "reviewLevel": "transcript_reviewed",
+      "transcriptAccess": "available",
+      "location": "00:24–01:29; 01:32–03:58; 05:41–06:06",
+      "finding": "Preparar el sector y el TTP de balasto; definir dos aparatos de vía, sentido y desplazamiento; encadenar puntos de paso de rasante y revisar el escape calculado.",
+      "capabilityIds": [
+        "rail"
+      ]
+    },
+    {
+      "index": 9,
+      "video_id": "hlapFNA5q4A",
+      "title": "¿Cómo crear cunetas vectoriales en Istram? | TIP rápido",
+      "url": "https://www.youtube.com/watch?v=hlapFNA5q4A",
+      "reviewLevel": "transcript_reviewed",
+      "transcriptAccess": "available",
+      "capabilityIds": [
+        "drainage"
+      ],
+      "location": "00:00–03:25",
+      "finding": "Separar contorno de cuneta y revestimiento, mantener orden y anclaje del vector, comprobar su referencia contra la subrasante; los códigos del ejemplo no son universales."
+    },
+    {
+      "index": 10,
+      "video_id": "56HW-VDILtg",
+      "title": "Cómo modelar un talud de corte con varias inclinaciones.",
+      "url": "https://www.youtube.com/watch?v=56HW-VDILtg",
+      "reviewLevel": "transcript_reviewed",
+      "transcriptAccess": "available",
+      "location": "00:26–01:11; 01:19–01:45",
+      "finding": "Talud vectorial desde una polilínea con punto de enganche; asegurar alcance del último vector hasta el terreno; aplicar también a explanaciones.",
+      "capabilityIds": [
+        "slopes"
+      ]
+    },
+    {
+      "index": 11,
+      "video_id": "tlfLCi7Qsx0",
+      "title": "Cómo truncar taludes superpuestos entre dos corredores",
+      "url": "https://www.youtube.com/watch?v=tlfLCi7Qsx0",
+      "reviewLevel": "transcript_reviewed",
+      "transcriptAccess": "available",
+      "location": "00:17–01:58",
+      "finding": "Frontera automática entre dos ejes con lados explícitos; redefinir tras editar, guardar, cargar en proyecto y recalcular con enlace activo.",
+      "capabilityIds": [
+        "slopes"
+      ]
+    },
+    {
+      "index": 12,
+      "video_id": "1czMgyLnggw",
+      "title": "De DWG a TTP",
+      "url": "https://www.youtube.com/watch?v=1czMgyLnggw",
+      "reviewLevel": "transcript_reviewed",
+      "transcriptAccess": "available",
+      "location": "00:10–01:32",
+      "finding": "Importar curvas DWG, declarar superficie cartográfica o convertir y triangular; la transcripción no identifica con fiabilidad todas las opciones de importación.",
+      "capabilityIds": [
+        "cartography"
+      ]
+    },
+    {
+      "index": 13,
+      "video_id": "Xx9Jak1SJSQ",
+      "title": "Transiciones de taludes en ISTRAM: control manual y validación en tiempo real",
+      "url": "https://www.youtube.com/watch?v=Xx9Jak1SJSQ",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "slopes"
+      ]
+    },
+    {
+      "index": 14,
+      "video_id": "rm7dq1rkITU",
+      "title": "Taludes definidos a partir de la clasificación de materiales",
+      "url": "https://www.youtube.com/watch?v=rm7dq1rkITU",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "slopes"
+      ]
+    },
+    {
+      "index": 15,
+      "video_id": "3xE3bsCv5R0",
+      "title": "Anotación de distancias y elevaciones en transversales con ISTRAM",
+      "url": "https://www.youtube.com/watch?v=3xE3bsCv5R0",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "drawings"
+      ],
+      "refreshTranscriptAccess": "unavailable",
+      "refreshReviewedAt": "2026-10-09"
+    },
+    {
+      "index": 16,
+      "video_id": "VHJoo3ggt0I",
+      "title": "Paso inferior tipo cajón en ISTRAM | Modelado rápido, metrados e IFC",
+      "url": "https://www.youtube.com/watch?v=VHJoo3ggt0I",
+      "reviewLevel": "transcript_reviewed",
+      "transcriptAccess": "available",
+      "location": "00:14–02:42",
+      "finding": "Sección tipo cajón por zona de cálculo; losa y muro como TTP antes del terreno natural; regenerar transversales y calcular antes de BIM.",
+      "capabilityIds": [
+        "structures"
+      ],
+      "refreshTranscriptAccess": "unavailable",
+      "refreshReviewedAt": "2026-10-09"
+    },
+    {
+      "index": 17,
+      "video_id": "z0kFCXbBu9g",
+      "title": "Muro con altura variable siguiendo una línea 2D en ISTRAM",
+      "url": "https://www.youtube.com/watch?v=z0kFCXbBu9g",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "structures"
+      ],
+      "refreshTranscriptAccess": "unavailable",
+      "refreshReviewedAt": "2026-10-09"
+    },
+    {
+      "index": 18,
+      "video_id": "rM926QYQtZU",
+      "title": "Cuando una sección transversal no es suficiente",
+      "url": "https://www.youtube.com/watch?v=rM926QYQtZU",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "sections"
+      ]
+    },
+    {
+      "index": 19,
+      "video_id": "233KzpZRujE",
+      "title": "Diseño de Muro de Contención entre Ejes Paralelos a Distinto Nivel",
+      "url": "https://www.youtube.com/watch?v=233KzpZRujE",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "structures"
+      ]
+    },
+    {
+      "index": 20,
+      "video_id": "rayfchBt-fs",
+      "title": "Túnel vectorial en ISTRAM – Flujo práctico",
+      "url": "https://www.youtube.com/watch?v=rayfchBt-fs",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "unavailable_on_attempt",
+      "capabilityIds": [
+        "tunnels"
+      ],
+      "refreshTranscriptAccess": "unavailable",
+      "refreshReviewedAt": "2026-10-09"
+    },
+    {
+      "index": 21,
+      "video_id": "etPmNHYvVBc",
+      "title": "Cómo colocar un muro de contención en \"L\" con Istram",
+      "url": "https://www.youtube.com/watch?v=etPmNHYvVBc",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "structures"
+      ]
+    },
+    {
+      "index": 22,
+      "video_id": "75pVIBIBBz4",
+      "title": "Configura bermas/banquetas en taludes para muros - con Istram",
+      "url": "https://www.youtube.com/watch?v=75pVIBIBBz4",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "slopes"
+      ]
+    },
+    {
+      "index": 23,
+      "video_id": "34kbdTkYUkk",
+      "title": "Escalonados en terraplén con Istram",
+      "url": "https://www.youtube.com/watch?v=34kbdTkYUkk",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "slopes"
+      ]
+    },
+    {
+      "index": 24,
+      "video_id": "7ugAbJHjQiE",
+      "title": "Cómo mostrar viviendas correctamente en las secciones transversales",
+      "url": "https://www.youtube.com/watch?v=7ugAbJHjQiE",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "sections"
+      ]
+    },
+    {
+      "index": 25,
+      "video_id": "5p8IOIn2OQ8",
+      "title": "Aprende a ajustar la pendiente de la capa de forma y el subbalasto en Istram",
+      "url": "https://www.youtube.com/watch?v=5p8IOIn2OQ8",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "rail"
+      ]
+    },
+    {
+      "index": 26,
+      "video_id": "dHNxb7dFvGg",
+      "title": "Diseño de rasante de tuberías en ISTRAM con saltos verticales y sin pegar superficies",
+      "url": "https://www.youtube.com/watch?v=dHNxb7dFvGg",
+      "reviewLevel": "transcript_reviewed",
+      "transcriptAccess": "available",
+      "location": "00:54–03:04; 07:36–09:19",
+      "finding": "Priorizar la superficie proyectada sobre el terreno; revisar perfiles y cotas de entrada/salida en nodos con saltos, sin certificar hidráulica ni pozos.",
+      "capabilityIds": [
+        "pipelines"
+      ],
+      "refreshReviewedAt": "2026-10-09"
+    },
+    {
+      "index": 27,
+      "video_id": "jVuRGK3mEtY",
+      "title": "¿Cómo automatizar la colocación de muros en ISTRAM según su altura?",
+      "url": "https://www.youtube.com/watch?v=jVuRGK3mEtY",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "unavailable_on_attempt",
+      "capabilityIds": [
+        "structures"
+      ]
+    },
+    {
+      "index": 28,
+      "video_id": "xH1moH11JYg",
+      "title": "DEFENSA RIBEREÑA - GAVIONES",
+      "url": "https://www.youtube.com/watch?v=xH1moH11JYg",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "drainage"
+      ]
+    },
+    {
+      "index": 29,
+      "video_id": "e3HEYAvw-V4",
+      "title": "Nubes densas de puntos y exportación a Trimble Connect",
+      "url": "https://www.youtube.com/watch?v=e3HEYAvw-V4",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "cartography"
+      ]
+    },
+    {
+      "index": 30,
+      "video_id": "2Q4eJ7EGzng",
+      "title": "Señalizacion en Istram",
+      "url": "https://www.youtube.com/watch?v=2Q4eJ7EGzng",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "road_furniture"
+      ]
+    },
+    {
+      "index": 31,
+      "video_id": "ZXcvtlZTBXw",
+      "title": "Istram®BIM: Añadir elementos existentes en secciones transversales",
+      "url": "https://www.youtube.com/watch?v=ZXcvtlZTBXw",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "sections"
+      ]
+    },
+    {
+      "index": 32,
+      "video_id": "FC7RSAVPHJ4",
+      "title": "Actuaización Istram: Colocación de postes y catenarias en proyectos ferroviarios",
+      "url": "https://www.youtube.com/watch?v=FC7RSAVPHJ4",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "rail"
+      ]
+    },
+    {
+      "index": 33,
+      "video_id": "HX7g2Ish_AA",
+      "title": "Configuración y Carga de Ficheros IFC, XML y Ortofotos en Infraworks desde ISTRAM",
+      "url": "https://www.youtube.com/watch?v=HX7g2Ish_AA",
+      "reviewLevel": "transcript_reviewed",
+      "transcriptAccess": "available",
+      "location": "00:06–02:42; 05:21–06:52",
+      "finding": "Seleccionar alcance por elementos, exportar terreno en LandXML y modelos por partes con CRS coherente; la configuración de importación del receptor depende de su versión.",
+      "capabilityIds": [
+        "interoperability"
+      ]
+    },
+    {
+      "index": 34,
+      "video_id": "ehhnngNejsg",
+      "title": "Revisión Normativa de Diseño Vial - Parte 6 de 7: Importación de Ejes y Rasantes desde XML",
+      "url": "https://www.youtube.com/watch?v=ehhnngNejsg",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "design_checks"
+      ]
+    },
+    {
+      "index": 35,
+      "video_id": "4phtLgZzD0E",
+      "title": "Revisión Normativa de Diseño Vial - Parte 7 de 7: Detección de errores de diseño",
+      "url": "https://www.youtube.com/watch?v=4phtLgZzD0E",
+      "reviewLevel": "transcript_reviewed",
+      "transcriptAccess": "available",
+      "location": "00:13–02:39; 03:47–05:30",
+      "finding": "Librería del país, tablas y velocidades por tramos; revisar planta y rasante y guardar informes. La importación XML exige configurar los parámetros de revisión.",
+      "capabilityIds": [
+        "design_checks"
+      ]
+    },
+    {
+      "index": 36,
+      "video_id": "dk8569Ikmjs",
+      "title": "Revisión Normativa de Diseño Vial - Parte 5 de 7: Carga del Fichero ISA para Revisión en ISTRAM",
+      "url": "https://www.youtube.com/watch?v=dk8569Ikmjs",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "design_checks"
+      ]
+    },
+    {
+      "index": 37,
+      "video_id": "CSa3yi31W9E",
+      "title": "Revisión Normativa de Diseño Vial - Parte 4 de 7: Información a Solicitar 2",
+      "url": "https://www.youtube.com/watch?v=CSa3yi31W9E",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "design_checks"
+      ]
+    },
+    {
+      "index": 38,
+      "video_id": "8Ry87hSa4vc",
+      "title": "Revisión de Normativa de Diseño Vial Parte 2 de 7 - Configuración de Normativa en ISTRAM",
+      "url": "https://www.youtube.com/watch?v=8Ry87hSa4vc",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "design_checks"
+      ]
+    },
+    {
+      "index": 39,
+      "video_id": "tnfNlafMbds",
+      "title": "Revisión Normativa de Diseño Vial - Parte 3 de 7: Información a Solicitar 1",
+      "url": "https://www.youtube.com/watch?v=tnfNlafMbds",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "design_checks"
+      ]
+    },
+    {
+      "index": 40,
+      "video_id": "s5xsoS7zs-E",
+      "title": "Revisión Normativa de Diseño Vial: Eje y Rasante - Parte 1 de 7: Biblioteca de Normativas",
+      "url": "https://www.youtube.com/watch?v=s5xsoS7zs-E",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "design_checks"
+      ]
+    },
+    {
+      "index": 41,
+      "video_id": "DkuxFOa4m1k",
+      "title": "Creación de Secciones de Zanja para Instalaciones Subterráneas",
+      "url": "https://www.youtube.com/watch?v=DkuxFOa4m1k",
+      "reviewLevel": "transcript_reviewed",
+      "transcriptAccess": "available",
+      "location": "01:30–03:54; 04:30–04:57",
+      "finding": "Definir materiales de zanja y posiciones de ductos; calcular y revisar elementos BIM. Una cinta modelada con la herramienta de tubos requiere clasificación semántica propia.",
+      "capabilityIds": [
+        "pipelines"
+      ]
+    },
+    {
+      "index": 42,
+      "video_id": "ocwWjiR_9o0",
+      "title": "Movimiento de tierras 4D: de ISTRAM a Navisworks",
+      "url": "https://www.youtube.com/watch?v=ocwWjiR_9o0",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "construction_monitoring"
+      ]
+    },
+    {
+      "index": 43,
+      "video_id": "xb7cprgiuyE",
+      "title": "Istram a Navisworks",
+      "url": "https://www.youtube.com/watch?v=xb7cprgiuyE",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "interoperability"
+      ]
+    },
+    {
+      "index": 44,
+      "video_id": "w0nD9lRPe10",
+      "title": "Datos para replanteo en obra",
+      "url": "https://www.youtube.com/watch?v=w0nD9lRPe10",
+      "reviewLevel": "transcript_reviewed",
+      "transcriptAccess": "available",
+      "location": "01:07–03:38; 04:13–05:04",
+      "finding": "Replanteo por eje, superficie, código y lado con intervalo de PK; conservar XYZ, evitar encabezados repetidos y asignar nombre para evitar sobrescrituras.",
+      "capabilityIds": [
+        "stakeout"
+      ]
+    },
+    {
+      "index": 45,
+      "video_id": "Z_m-_uB36Os",
+      "title": "Estructuras - Cimentación",
+      "url": "https://www.youtube.com/watch?v=Z_m-_uB36Os",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "structures"
+      ]
+    },
+    {
+      "index": 46,
+      "video_id": "Su4E3jKj8zU",
+      "title": "Obra Vial y Túneles",
+      "url": "https://www.youtube.com/watch?v=Su4E3jKj8zU",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "tunnels"
+      ]
+    },
+    {
+      "index": 47,
+      "video_id": "WsS6ID0Vk3Y",
+      "title": "IMPORTAR SHP",
+      "url": "https://www.youtube.com/watch?v=WsS6ID0Vk3Y",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "cartography"
+      ]
+    },
+    {
+      "index": 48,
+      "video_id": "dXMxKQbx814",
+      "title": "Laminado de Planos - Pks de Inicio y fin",
+      "url": "https://www.youtube.com/watch?v=dXMxKQbx814",
+      "reviewLevel": "transcript_reviewed",
+      "transcriptAccess": "available",
+      "location": "00:36–01:24; 03:25–06:49",
+      "finding": "Cajetín con atributos y guitarra de transversales; vincular PK inicial/final y numeración, regenerar y comprobar cada hoja. Los números de campo son propios de la plantilla.",
+      "capabilityIds": [
+        "drawings"
+      ]
+    },
+    {
+      "index": 49,
+      "video_id": "QbrE7PfHfmc",
+      "title": "Proyecto vial con Intercambios",
+      "url": "https://www.youtube.com/watch?v=QbrE7PfHfmc",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "horizontal_alignment"
+      ]
+    },
+    {
+      "index": 50,
+      "video_id": "7Ktb_TiUkFw",
+      "title": "Superficie de terreno desde Dibujo de transversales",
+      "url": "https://www.youtube.com/watch?v=7Ktb_TiUkFw",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "surfaces"
+      ]
+    },
+    {
+      "index": 51,
+      "video_id": "PBLv10PIk9o",
+      "title": "Vías Urbanas e Intercambios viales con Istram",
+      "url": "https://www.youtube.com/watch?v=PBLv10PIk9o",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "sections"
+      ]
+    },
+    {
+      "index": 52,
+      "video_id": "RcBY0lW738U",
+      "title": "CUBICACIÓN ENTRE NUBES DENSAS DE PUNTOS",
+      "url": "https://www.youtube.com/watch?v=RcBY0lW738U",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "quantities"
+      ]
+    },
+    {
+      "index": 53,
+      "video_id": "1XJDH7OrTVc",
+      "title": "Istram - Colocación de Elementos 3D/Bordillos en Explanaciones",
+      "url": "https://www.youtube.com/watch?v=1XJDH7OrTVc",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "grading"
+      ]
+    },
+    {
+      "index": 54,
+      "video_id": "BYKVdW0_y08",
+      "title": "Autopista - Istram-Twinmotion",
+      "url": "https://www.youtube.com/watch?v=BYKVdW0_y08",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "visualization"
+      ]
+    },
+    {
+      "index": 55,
+      "video_id": "JND_TtHAsIU",
+      "title": "Resultados de un Curso Intensivo con ISTRAM",
+      "url": "https://www.youtube.com/watch?v=JND_TtHAsIU",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "project_context"
+      ]
+    },
+    {
+      "index": 56,
+      "video_id": "7cajvBh16QE",
+      "title": "Obtención de Perfiles Transversales desde datos Excel",
+      "url": "https://www.youtube.com/watch?v=7cajvBh16QE",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "sections"
+      ]
+    },
+    {
+      "index": 57,
+      "video_id": "xa4u_Y1B8K8",
+      "title": "Topsoil | Istram vs Civil 3D",
+      "url": "https://www.youtube.com/watch?v=xa4u_Y1B8K8",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "sections"
+      ]
+    },
+    {
+      "index": 58,
+      "video_id": "2KylkA1Dg4I",
+      "title": "Rasante: Desde Autocad a Istram",
+      "url": "https://www.youtube.com/watch?v=2KylkA1Dg4I",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "vertical_alignment"
+      ]
+    },
+    {
+      "index": 59,
+      "video_id": "Rfnpd4UZIBU",
+      "title": "Convertit TIFF a ECW",
+      "url": "https://www.youtube.com/watch?v=Rfnpd4UZIBU",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "cartography"
+      ]
+    },
+    {
+      "index": 60,
+      "video_id": "fl4XHoX-CWY",
+      "title": "Explanación: Datos para replanteo en Obra",
+      "url": "https://www.youtube.com/watch?v=fl4XHoX-CWY",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "stakeout"
+      ]
+    },
+    {
+      "index": 61,
+      "video_id": "EgBAxnm-mF8",
+      "title": "Plantilla para obras viales",
+      "url": "https://www.youtube.com/watch?v=EgBAxnm-mF8",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "project_context"
+      ]
+    },
+    {
+      "index": 62,
+      "video_id": "G0OeNOc9hQw",
+      "title": "Colocación de firmes/pavimento desde bloc de notas o excel",
+      "url": "https://www.youtube.com/watch?v=G0OeNOc9hQw",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "sections"
+      ]
+    },
+    {
+      "index": 63,
+      "video_id": "xa83f7MMTx4",
+      "title": "Agrupación Eficiente de Ejes en Grandes Proyectos de Ingeniería",
+      "url": "https://www.youtube.com/watch?v=xa83f7MMTx4",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "project_context"
+      ]
+    },
+    {
+      "index": 64,
+      "video_id": "e_-WAvw9b8U",
+      "title": "TIP: Puntos Singulares de planta hacia el perfil longitudinal",
+      "url": "https://www.youtube.com/watch?v=e_-WAvw9b8U",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "horizontal_alignment"
+      ]
+    },
+    {
+      "index": 65,
+      "video_id": "LRnLQfiGojA",
+      "title": "CUNETA URBANA CON TAPA",
+      "url": "https://www.youtube.com/watch?v=LRnLQfiGojA",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "sections"
+      ]
+    },
+    {
+      "index": 66,
+      "video_id": "lI528yDtrN8",
+      "title": "Istram - Lumen",
+      "url": "https://www.youtube.com/watch?v=lI528yDtrN8",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "visualization"
+      ]
+    },
+    {
+      "index": 67,
+      "video_id": "A9FPT9n0Myc",
+      "title": "Diseño Helicoidal en Túneles Ferroviarios",
+      "url": "https://www.youtube.com/watch?v=A9FPT9n0Myc",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "tunnels"
+      ]
+    },
+    {
+      "index": 68,
+      "video_id": "kYBwoBuFHYk",
+      "title": "Bajante de talud - IstramBIM - Lumion",
+      "url": "https://www.youtube.com/watch?v=kYBwoBuFHYk",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "drainage"
+      ]
+    },
+    {
+      "index": 69,
+      "video_id": "E_VL495p-N0",
+      "title": "PostesDeCatenarias",
+      "url": "https://www.youtube.com/watch?v=E_VL495p-N0",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "rail"
+      ]
+    },
+    {
+      "index": 70,
+      "video_id": "veI_ELOtqWA",
+      "title": "TIN desde estación Total a RAS Mapper",
+      "url": "https://www.youtube.com/watch?v=veI_ELOtqWA",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "cartography"
+      ]
+    },
+    {
+      "index": 71,
+      "video_id": "LD5l_7MP5cc",
+      "title": "Istram aTwinmotion paso a paso",
+      "url": "https://www.youtube.com/watch?v=LD5l_7MP5cc",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "visualization"
+      ]
+    },
+    {
+      "index": 72,
+      "video_id": "fFCVxE69YrE",
+      "title": "Animación de Proyecto vial - Istram - Twinmotion",
+      "url": "https://www.youtube.com/watch?v=fFCVxE69YrE",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "visualization"
+      ]
+    },
+    {
+      "index": 73,
+      "video_id": "mKDRYmgRZDA",
+      "title": "¿Dónde Ubicar las Normativas de Diseño en Istram?",
+      "url": "https://www.youtube.com/watch?v=mKDRYmgRZDA",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "design_checks"
+      ]
+    },
+    {
+      "index": 74,
+      "video_id": "j8ZadLnrAoc",
+      "title": "Operación con Imágenes (DEM) y Nube de Puntos -Vídeo 3/3-",
+      "url": "https://www.youtube.com/watch?v=j8ZadLnrAoc",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "cartography"
+      ]
+    },
+    {
+      "index": 75,
+      "video_id": "hQdVXSmVxYw",
+      "title": "Operación con Imágenes (DEM) y Nube de Puntos -Vídeo 2/3-",
+      "url": "https://www.youtube.com/watch?v=hQdVXSmVxYw",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "cartography"
+      ]
+    },
+    {
+      "index": 76,
+      "video_id": "K8-hUp03cX4",
+      "title": "Operación con Imágenes (DEM) y Nube de Puntos -Vídeo 1/3-",
+      "url": "https://www.youtube.com/watch?v=K8-hUp03cX4",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "cartography"
+      ]
+    },
+    {
+      "index": 77,
+      "video_id": "BLZOKZpl2co",
+      "title": "INTERCAMBIO DISTRIBUIDOR VIAL",
+      "url": "https://www.youtube.com/watch?v=BLZOKZpl2co",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "horizontal_alignment"
+      ]
+    },
+    {
+      "index": 78,
+      "video_id": "-8yDh_lXvL0",
+      "title": "Coordinación y colaboración en proyectos BIM con Istram y CDE",
+      "url": "https://www.youtube.com/watch?v=-8yDh_lXvL0",
+      "reviewLevel": "transcript_reviewed",
+      "transcriptAccess": "available",
+      "location": "01:59–04:19; 04:41–05:52; 08:08–09:28",
+      "finding": "Calcular, generar árbol BIM y exportar por ejes/grupos con atributos; federar en el CDE y revisar colisiones. El envío de tareas es una operación externa separada.",
+      "capabilityIds": [
+        "bim"
+      ]
+    },
+    {
+      "index": 79,
+      "video_id": "G58_cMkgzyQ",
+      "title": "Control de avance del movimiento de tierra con Istram",
+      "url": "https://www.youtube.com/watch?v=G58_cMkgzyQ",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "construction_monitoring"
+      ]
+    },
+    {
+      "index": 80,
+      "video_id": "YiSZQl9BwaQ",
+      "title": "Superelevación o Peraltes de Civil 3D a IstramBIM",
+      "url": "https://www.youtube.com/watch?v=YiSZQl9BwaQ",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "sections"
+      ]
+    },
+    {
+      "index": 81,
+      "video_id": "Qr7-6ot2pU4",
+      "title": "VIADUCTO 2 3KM - Estructura con Istram",
+      "url": "https://www.youtube.com/watch?v=Qr7-6ot2pU4",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "structures"
+      ]
+    },
+    {
+      "index": 82,
+      "video_id": "zuzW7S07WQc",
+      "title": "Disipador de energía hidráulica - Istram",
+      "url": "https://www.youtube.com/watch?v=zuzW7S07WQc",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "drainage"
+      ]
+    },
+    {
+      "index": 83,
+      "video_id": "YMlfNP9sT3k",
+      "title": "Diseño de explanación básica - Istram",
+      "url": "https://www.youtube.com/watch?v=YMlfNP9sT3k",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "grading"
+      ]
+    },
+    {
+      "index": 84,
+      "video_id": "jYfJFFAVdtU",
+      "title": "Puentes - Viaductos con Istram",
+      "url": "https://www.youtube.com/watch?v=jYfJFFAVdtU",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "structures"
+      ]
+    },
+    {
+      "index": 85,
+      "video_id": "zxxDHu9Q9tg",
+      "title": "Modelado de Superficies - Istram",
+      "url": "https://www.youtube.com/watch?v=zxxDHu9Q9tg",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "surfaces"
+      ]
+    },
+    {
+      "index": 86,
+      "video_id": "JE1zz_Y1olc",
+      "title": "CUÑAS DE TRANSICIÓN en líneas férreas",
+      "url": "https://www.youtube.com/watch?v=JE1zz_Y1olc",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "rail"
+      ]
+    },
+    {
+      "index": 87,
+      "video_id": "jJGYDRbCec0",
+      "title": "Seguimiento de Obra con Istram - DIQUES desde Dibujos CAD",
+      "url": "https://www.youtube.com/watch?v=jJGYDRbCec0",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "construction_monitoring"
+      ]
+    },
+    {
+      "index": 88,
+      "video_id": "UlIWxIGI7xM",
+      "title": "Diseño vial: Normativas en software OpenBIM - Istram",
+      "url": "https://www.youtube.com/watch?v=UlIWxIGI7xM",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "design_checks"
+      ]
+    },
+    {
+      "index": 89,
+      "video_id": "ZaTB2EHjXL4",
+      "title": "Reporte de coordendas de una ODT diseñada en Istram",
+      "url": "https://www.youtube.com/watch?v=ZaTB2EHjXL4",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "drainage"
+      ]
+    },
+    {
+      "index": 90,
+      "video_id": "MWcnb6nefV0",
+      "title": "Exportar Imágenes de Istram a Civil 3D",
+      "url": "https://www.youtube.com/watch?v=MWcnb6nefV0",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "cartography"
+      ]
+    },
+    {
+      "index": 91,
+      "video_id": "OlYjbMw_11o",
+      "title": "Glorietas o Rotondas",
+      "url": "https://www.youtube.com/watch?v=OlYjbMw_11o",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "horizontal_alignment"
+      ]
+    },
+    {
+      "index": 92,
+      "video_id": "NpmMOw2gIKw",
+      "title": "Túnel - Avance y Destroza",
+      "url": "https://www.youtube.com/watch?v=NpmMOw2gIKw",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "tunnels"
+      ]
+    },
+    {
+      "index": 93,
+      "video_id": "5RMeG6ypUU0",
+      "title": "IstramBIM a Civil 3D",
+      "url": "https://www.youtube.com/watch?v=5RMeG6ypUU0",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "interoperability"
+      ]
+    },
+    {
+      "index": 94,
+      "video_id": "r5P34-pjx5M",
+      "title": "ODT - Tapa de Caja de alivio o Arqueta",
+      "url": "https://www.youtube.com/watch?v=r5P34-pjx5M",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "drainage"
+      ]
+    },
+    {
+      "index": 95,
+      "video_id": "IFETHKKP6Ww",
+      "title": "Firmes/Pavimento en los cruces viales",
+      "url": "https://www.youtube.com/watch?v=IFETHKKP6Ww",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "sections"
+      ]
+    },
+    {
+      "index": 96,
+      "video_id": "zevesBrU05c",
+      "title": "Tapa de Rejilla en cunetas de obras viales.",
+      "url": "https://www.youtube.com/watch?v=zevesBrU05c",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "sections"
+      ]
+    },
+    {
+      "index": 97,
+      "video_id": "8QUiPiaDwaY",
+      "title": "Ecuaciones de Empalme (Ecuación de PK)",
+      "url": "https://www.youtube.com/watch?v=8QUiPiaDwaY",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "horizontal_alignment"
+      ]
+    },
+    {
+      "index": 98,
+      "video_id": "e6-Q1q2xkPs",
+      "title": "Istram - Twinmotion",
+      "url": "https://www.youtube.com/watch?v=e6-Q1q2xkPs",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "visualization"
+      ]
+    },
+    {
+      "index": 99,
+      "video_id": "vjYadmPueoQ",
+      "title": "Intersección de Túneles",
+      "url": "https://www.youtube.com/watch?v=vjYadmPueoQ",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "tunnels"
+      ]
+    },
+    {
+      "index": 100,
+      "video_id": "Rm1KcXlc2ZY",
+      "title": "ISTRAM - BIMVisor",
+      "url": "https://www.youtube.com/watch?v=Rm1KcXlc2ZY",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "bim"
+      ]
+    },
+    {
+      "index": 101,
+      "video_id": "UAWsLkvCvEw",
+      "title": "Volumen por Prismas",
+      "url": "https://www.youtube.com/watch?v=UAWsLkvCvEw",
+      "reviewLevel": "transcript_reviewed",
+      "transcriptAccess": "available",
+      "location": "00:06–00:50; 01:49–02:57",
+      "finding": "Comparación de nube de puntos y triangulación con contorno. El título dice prismas y la transcripción menciona perfiles: confirmar el método real en la versión de ISTRAM.",
+      "capabilityIds": [
+        "quantities"
+      ]
+    },
+    {
+      "index": 102,
+      "video_id": "GyPHb9XbhoY",
+      "title": "Banquetas/Bermas con pendiente longitudinal independiente",
+      "url": "https://www.youtube.com/watch?v=GyPHb9XbhoY",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "slopes"
+      ]
+    },
+    {
+      "index": 103,
+      "video_id": "-8XOGG9_b3Y",
+      "title": "CANALES - Istram",
+      "url": "https://www.youtube.com/watch?v=-8XOGG9_b3Y",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "drainage"
+      ]
+    },
+    {
+      "index": 104,
+      "video_id": "w87jAZYKzPY",
+      "title": "Presa de Relaves",
+      "url": "https://www.youtube.com/watch?v=w87jAZYKzPY",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "grading"
+      ]
+    },
+    {
+      "index": 105,
+      "video_id": "QdWUCwqvvys",
+      "title": "Istram en Zona Urbana",
+      "url": "https://www.youtube.com/watch?v=QdWUCwqvvys",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "sections"
+      ]
+    },
+    {
+      "index": 106,
+      "video_id": "hbF4aHhbkPc",
+      "title": "APARATOS DE VIA: Desvíos Ferroviarios.",
+      "url": "https://www.youtube.com/watch?v=hbF4aHhbkPc",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "rail"
+      ]
+    },
+    {
+      "index": 107,
+      "video_id": "bBF103hmLI0",
+      "title": "Animación de Autopista y Ferrocarril",
+      "url": "https://www.youtube.com/watch?v=bBF103hmLI0",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "visualization"
+      ]
+    },
+    {
+      "index": 108,
+      "video_id": "fO0B2T6ZRhw",
+      "title": "HEC-RAS - ISTRAM",
+      "url": "https://www.youtube.com/watch?v=fO0B2T6ZRhw",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "drainage"
+      ]
+    },
+    {
+      "index": 109,
+      "video_id": "ivzPOYphCSk",
+      "title": "Separador central / Mediana",
+      "url": "https://www.youtube.com/watch?v=ivzPOYphCSk",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "sections"
+      ]
+    },
+    {
+      "index": 110,
+      "video_id": "kMFC4KEs_Vk",
+      "title": "DEFENSA RIBEREÑA CON ESCOLLERA",
+      "url": "https://www.youtube.com/watch?v=kMFC4KEs_Vk",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "drainage"
+      ]
+    },
+    {
+      "index": 111,
+      "video_id": "Z6oHTid-dsI",
+      "title": "COLOCACIÓN DE SUBDREN EN CARRETERA - ISTRAM-",
+      "url": "https://www.youtube.com/watch?v=Z6oHTid-dsI",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "drainage"
+      ]
+    },
+    {
+      "index": 112,
+      "video_id": "WBNQ4XaGJes",
+      "title": "MURO DE GAVIONES",
+      "url": "https://www.youtube.com/watch?v=WBNQ4XaGJes",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "drainage"
+      ]
+    },
+    {
+      "index": 113,
+      "video_id": "h38xTG6raB4",
+      "title": "Formas de crear - CRUCES - con Istram",
+      "url": "https://www.youtube.com/watch?v=h38xTG6raB4",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "horizontal_alignment"
+      ]
+    },
+    {
+      "index": 114,
+      "video_id": "VDVPzNqKy7k",
+      "title": "Trazado Curvilíneo (curvas de volteo/reversas/ovoides)",
+      "url": "https://www.youtube.com/watch?v=VDVPzNqKy7k",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "horizontal_alignment"
+      ]
+    },
+    {
+      "index": 115,
+      "video_id": "mY0TO1w5U8E",
+      "title": "Curvas de volteo, reversas y compuestas/ovoides con Civil 3D e Istram",
+      "url": "https://www.youtube.com/watch?v=mY0TO1w5U8E",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "horizontal_alignment"
+      ]
+    },
+    {
+      "index": 116,
+      "video_id": "rGQN9V0OMRY",
+      "title": "100 millones de puntos en 3 minutos con ISTRAM",
+      "url": "https://www.youtube.com/watch?v=rGQN9V0OMRY",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "cartography"
+      ]
+    },
+    {
+      "index": 117,
+      "video_id": "6UKZAnGK0kU",
+      "title": "EMBALSE (Área - Capacidad)",
+      "url": "https://www.youtube.com/watch?v=6UKZAnGK0kU",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "grading"
+      ]
+    },
+    {
+      "index": 118,
+      "video_id": "hMayGYK2BgM",
+      "title": "Plataforma/explanada/grading con distintos materiales",
+      "url": "https://www.youtube.com/watch?v=hMayGYK2BgM",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "grading"
+      ]
+    },
+    {
+      "index": 119,
+      "video_id": "ZjLUXHiim10",
+      "title": "Transición de bóvedas de túnel - Istram",
+      "url": "https://www.youtube.com/watch?v=ZjLUXHiim10",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "not_attempted",
+      "capabilityIds": [
+        "tunnels"
+      ]
+    },
+    {
+      "index": 120,
+      "video_id": "r0dvvEMhlAo",
+      "title": "ODT (Obra de Drenaje Transversal) - ISTRAM",
+      "url": "https://www.youtube.com/watch?v=r0dvvEMhlAo",
+      "reviewLevel": "inventory_only",
+      "transcriptAccess": "unavailable_on_attempt",
+      "capabilityIds": [
+        "drainage"
+      ]
+    }
+  ],
+  "notebookSources": [
+    "Clase 1",
+    "Clase 2",
+    "Clase 3",
+    "Clase 4",
+    "Clase 5",
+    "Clase 6",
+    "Clase 7",
+    "Clase 8",
+    "Clase 9",
+    "istram-ispol-modelado-superficies-5-pdf-free.pdf",
+    "ODT (Obra de Drenaje Transversal) - ISTRAM",
+    "RCEclass",
+    "WEBINAR SE SEGUIMIENTO DE OBRAS EJECUTADA"
+  ],
+  "refresh": {
+    "date": "2026-10-09",
+    "implementationVersion": "0.3.0-rc.1",
+    "notebookIdentityVerified": true,
+    "notebookSummaryReviewed": true,
+    "originalNotebookSourcesReviewed": false,
+    "channelIdentity": "Alex Matos_rs / @AlexMatosd",
+    "channelNameClarification": "Aldo no confirmado; se usa el enlace proporcionado por el usuario",
+    "unverifiedFormatClaims": [
+      ".isa/.isam: la síntesis no certifica su semántica ni autoriza escritores"
+    ],
+    "nativeAcceptancePassed": false
+  }
+}
