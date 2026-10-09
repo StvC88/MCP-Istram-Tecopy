@@ -5,7 +5,7 @@ on:
   pull_request:
   workflow_dispatch:
 permissions:
-  contents: read
+  contents: write
 jobs:
   verify:
     strategy:
@@ -23,7 +23,22 @@ jobs:
         shell: bash
         run: |
           if test -f package-lock.json; then npm ci; else npm install; fi
-      - run: npm run typecheck
+      - name: Type check
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run typecheck 2>&1 | tee typecheck.txt
+      - name: Record compilation diagnostics on development branch
+        if: failure() && matrix.os == 'ubuntu-latest' && matrix.node == '24' && github.event_name == 'push'
+        shell: bash
+        run: |
+          mkdir -p .ci
+          cp typecheck.txt .ci/typecheck.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .ci/typecheck.txt
+          git commit -m "Record compilation diagnostics" || exit 0
+          git push origin HEAD:codex/istram-stable
       - run: npm test
       - uses: actions/setup-python@v5
         with:

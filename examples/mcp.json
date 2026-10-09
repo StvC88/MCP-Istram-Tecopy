@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "istram": {
+      "command": "node",
+      "args": [
+        "C:/path/to/istram-mcp/dist/index.js"
+      ],
+      "env": {
+        "ISTRAM_PATH": "C:\\Ispol",
+        "ISTRAM_WORKSPACE": "C:\\path\\to\\istram-mcp\\.local\\projects",
+        "ISTRAM_PYTHON": "C:\\path\\to\\istram-mcp\\.venv\\Scripts\\python.exe"
+      }
+    }
+  }
+}
