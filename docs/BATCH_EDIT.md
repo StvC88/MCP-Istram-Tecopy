@@ -16,6 +16,8 @@ El enfoque aportado por el usuario evita repetir menús para cientos de elemento
 
 `project_prepare_batch` recibe `projectId`, `requestId` y `elements`. Cada elemento tiene `elementId` y `changes`. Cada cambio tiene `file` relativo a la copia, `line` de base 1, `expected` y `replacement` de una sola línea.
 
+En 0.3, `summaryOnly: true` devuelve resumen del lote y las primeras 20 entradas en lugar del manifiesto completo. `project_changes_preview` pagina cambios y hashes de archivos con `offset`/`limit`; `totalChanges` y `totalFiles` permiten recorrer cada lista. El valor por defecto conserva la respuesta completa anterior.
+
 Ejemplo **sintético** de contrato; las líneas `width` no son una gramática ISTRAM validada:
 
 ```json

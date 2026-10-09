@@ -5,10 +5,10 @@
   "channelUrl": "https://www.youtube.com/@AlexMatosd/videos",
   "notebookUrl": "https://notebook.google.com/notebook/66dd8f87-9726-490d-a9ce-739b73aee639",
   "notebookTitle": "ISTRAM Clases Chile",
-  "notebookSourceInventoryVerified": false,
+  "notebookSourceInventoryVerified": true,
   "notebookReportedSourceCount": 13,
   "inventoryVideoCount": 120,
-  "reviewedTranscriptCount": 15,
+  "reviewedTranscriptCount": 16,
   "fullVideoReviewComplete": false,
   "nativeAcceptancePassed": false,
   "officialAutomationApiVerified": false,
@@ -311,10 +311,12 @@
       "title": "Ejes, conexiones y ecuaciones de PK",
       "priority": "P1",
       "nativeExecutionVerified": false,
-      "currentSupport": "partial_read_or_infrastructure",
+      "currentSupport": "preparation_geometry_or_text_only",
       "existingTools": [
         "alignment_read",
-        "project_inspect"
+        "project_inspect",
+        "alignment_design_preview",
+        "design_package_prepare"
       ],
       "proposedTools": [
         "alignment_edit",
@@ -572,9 +574,11 @@
       "title": "Secciones, peraltes, firmes y elementos existentes",
       "priority": "P1",
       "nativeExecutionVerified": false,
-      "currentSupport": "partial_read_or_infrastructure",
+      "currentSupport": "preparation_geometry_or_text_only",
       "existingTools": [
-        "native_records_read"
+        "native_records_read",
+        "section_design_preview",
+        "design_package_prepare"
       ],
       "proposedTools": [
         "section_template_read",
@@ -882,9 +886,12 @@
       "title": "Cunetas, ODT, subdrenes y defensas",
       "priority": "P2",
       "nativeExecutionVerified": false,
-      "currentSupport": "partial_read_or_infrastructure",
+      "currentSupport": "preparation_geometry_or_text_only",
       "existingTools": [
-        "native_records_read"
+        "native_records_read",
+        "drainage_design_preview",
+        "section_design_preview",
+        "design_package_prepare"
       ],
       "proposedTools": [
         "drainage_define",
@@ -915,7 +922,7 @@
           "kind": "youtube",
           "videoIndex": 9,
           "url": "https://www.youtube.com/watch?v=hlapFNA5q4A",
-          "level": "inventory_only"
+          "level": "transcript_reviewed"
         },
         {
           "kind": "youtube",
@@ -996,10 +1003,12 @@
       "title": "Tuberías, pozos y zanjas multicapa",
       "priority": "P2",
       "nativeExecutionVerified": false,
-      "currentSupport": "partial_read_or_infrastructure",
+      "currentSupport": "preparation_geometry_or_text_only",
       "existingTools": [
         "profile_read",
-        "native_records_read"
+        "native_records_read",
+        "drainage_design_preview",
+        "design_package_prepare"
       ],
       "proposedTools": [
         "pipeline_profile_set",
@@ -1128,9 +1137,11 @@
       "title": "Túneles, bóvedas, revestimientos y fases",
       "priority": "P2",
       "nativeExecutionVerified": false,
-      "currentSupport": "partial_read_or_infrastructure",
+      "currentSupport": "preparation_geometry_or_text_only",
       "existingTools": [
-        "native_records_read"
+        "native_records_read",
+        "section_design_preview",
+        "design_package_prepare"
       ],
       "proposedTools": [
         "tunnel_section_set",
@@ -1218,9 +1229,11 @@
       "title": "Muros, cajones, puentes y cimentaciones",
       "priority": "P2",
       "nativeExecutionVerified": false,
-      "currentSupport": "partial_read_or_infrastructure",
+      "currentSupport": "preparation_geometry_or_text_only",
       "existingTools": [
-        "native_records_read"
+        "native_records_read",
+        "section_design_preview",
+        "design_package_prepare"
       ],
       "proposedTools": [
         "wall_rule_set",
@@ -1437,8 +1450,11 @@
       "title": "Planos, guitarras, cajetines y laminado",
       "priority": "P1",
       "nativeExecutionVerified": false,
-      "currentSupport": "not_implemented",
-      "existingTools": [],
+      "currentSupport": "preparation_geometry_or_text_only",
+      "existingTools": [
+        "section_design_preview",
+        "design_package_prepare"
+      ],
       "proposedTools": [
         "drawing_template_set",
         "drawing_generate",
@@ -1798,11 +1814,12 @@
       "title": "Edición por lotes de archivos asociados a elementos",
       "priority": "P0",
       "nativeExecutionVerified": false,
-      "currentSupport": "partial_read_or_infrastructure",
+      "currentSupport": "preparation_geometry_or_text_only",
       "existingTools": [
         "project_prepare_batch",
         "project_apply_changes",
-        "project_restore_changes"
+        "project_restore_changes",
+        "project_changes_preview"
       ],
       "proposedTools": [
         "element_manifest_import",
@@ -1937,11 +1954,13 @@
       "video_id": "hlapFNA5q4A",
       "title": "¿Cómo crear cunetas vectoriales en Istram? | TIP rápido",
       "url": "https://www.youtube.com/watch?v=hlapFNA5q4A",
-      "reviewLevel": "inventory_only",
-      "transcriptAccess": "not_attempted",
+      "reviewLevel": "transcript_reviewed",
+      "transcriptAccess": "available",
       "capabilityIds": [
         "drainage"
-      ]
+      ],
+      "location": "00:00–03:25",
+      "finding": "Separar contorno de cuneta y revestimiento, mantener orden y anclaje del vector, comprobar su referencia contra la subrasante; los códigos del ejemplo no son universales."
     },
     {
       "index": 10,
@@ -2013,7 +2032,9 @@
       "transcriptAccess": "not_attempted",
       "capabilityIds": [
         "drawings"
-      ]
+      ],
+      "refreshTranscriptAccess": "unavailable",
+      "refreshReviewedAt": "2026-10-09"
     },
     {
       "index": 16,
@@ -2026,7 +2047,9 @@
       "finding": "Sección tipo cajón por zona de cálculo; losa y muro como TTP antes del terreno natural; regenerar transversales y calcular antes de BIM.",
       "capabilityIds": [
         "structures"
-      ]
+      ],
+      "refreshTranscriptAccess": "unavailable",
+      "refreshReviewedAt": "2026-10-09"
     },
     {
       "index": 17,
@@ -2037,7 +2060,9 @@
       "transcriptAccess": "not_attempted",
       "capabilityIds": [
         "structures"
-      ]
+      ],
+      "refreshTranscriptAccess": "unavailable",
+      "refreshReviewedAt": "2026-10-09"
     },
     {
       "index": 18,
@@ -2070,7 +2095,9 @@
       "transcriptAccess": "unavailable_on_attempt",
       "capabilityIds": [
         "tunnels"
-      ]
+      ],
+      "refreshTranscriptAccess": "unavailable",
+      "refreshReviewedAt": "2026-10-09"
     },
     {
       "index": 21,
@@ -2135,10 +2162,11 @@
       "reviewLevel": "transcript_reviewed",
       "transcriptAccess": "available",
       "location": "00:54–03:04; 07:36–09:19",
-      "finding": "Triangular la rasante vial y priorizarla sobre el terreno; encadenar alineaciones y añadir un segmento vertical para los saltos de tubería.",
+      "finding": "Priorizar la superficie proyectada sobre el terreno; revisar perfiles y cotas de entrada/salida en nodos con saltos, sin certificar hidráulica ni pozos.",
       "capabilityIds": [
         "pipelines"
-      ]
+      ],
+      "refreshReviewedAt": "2026-10-09"
     },
     {
       "index": 27,
@@ -3188,5 +3216,33 @@
         "drainage"
       ]
     }
-  ]
+  ],
+  "notebookSources": [
+    "Clase 1",
+    "Clase 2",
+    "Clase 3",
+    "Clase 4",
+    "Clase 5",
+    "Clase 6",
+    "Clase 7",
+    "Clase 8",
+    "Clase 9",
+    "istram-ispol-modelado-superficies-5-pdf-free.pdf",
+    "ODT (Obra de Drenaje Transversal) - ISTRAM",
+    "RCEclass",
+    "WEBINAR SE SEGUIMIENTO DE OBRAS EJECUTADA"
+  ],
+  "refresh": {
+    "date": "2026-10-09",
+    "implementationVersion": "0.3.0-rc.1",
+    "notebookIdentityVerified": true,
+    "notebookSummaryReviewed": true,
+    "originalNotebookSourcesReviewed": false,
+    "channelIdentity": "Alex Matos_rs / @AlexMatosd",
+    "channelNameClarification": "Aldo no confirmado; se usa el enlace proporcionado por el usuario",
+    "unverifiedFormatClaims": [
+      ".isa/.isam: la síntesis no certifica su semántica ni autoriza escritores"
+    ],
+    "nativeAcceptancePassed": false
+  }
 }

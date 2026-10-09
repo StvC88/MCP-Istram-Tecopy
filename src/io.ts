@@ -64,11 +64,14 @@ export function atomicJson(file: string, value: unknown) {
   fs.writeFileSync(temp,JSON.stringify(value,null,2)+'\n',{flag:'wx'});
   fs.renameSync(temp,file);
 }
-export function walk(root: string, limit=25000): string[] {
+export function walk(root: string, limit=25000, excludedTopLevel:ReadonlySet<string>=new Set()): string[] {
   const found:string[]=[];
   const visit=(dir:string)=>{
     for(const entry of fs.readdirSync(dir,{withFileTypes:true})){
       if(entry.name === '.git' || entry.name === '.istram-mcp') continue;
+      // Do not enumerate, inspect links or read content inside an explicitly excluded directory.
+      const key=process.platform==='win32'?entry.name.toLowerCase():entry.name;
+      if(dir===root && excludedTopLevel.has(key))continue;
       const full=path.join(dir,entry.name);
       if(entry.isSymbolicLink()) throw new DomainError('SYMLINK','Cannot copy or inspect linked project content');
       if(entry.isDirectory()) visit(full);

@@ -1,5 +1,7 @@
 # Plan vigente
 
+Actualización vigente: [IMPLEMENTATION_0_3.md](IMPLEMENTATION_0_3.md), 25 herramientas y preparación geométrica con comprobación DXF independiente. Quedan recetas nativas y aceptación de ingeniería para las 24 áreas. La inspección de sesión y prueba asistida de eje 2D están documentadas en LIVE_TEST_2D.md; no constituyen un adaptador certificado.
+
 Alcance general: las [soluciones oficiales de ISTRAM](https://istram.net/istram/caracteristicas/soluciones/). Prioridad y cobertura: [docs/SCOPE.md](SCOPE.md).
 
 ## Base implementada

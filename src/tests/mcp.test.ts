@@ -16,7 +16,7 @@ test('stdio protocol lists tools and resources, validates arguments, exposes hon
   const client=new Client({name:'integration-test',version:'1.0.0'});
   try{
     await client.connect(transport);
-    const tools=await client.listTools();assert.ok(tools.tools.length>=17);
+    const tools=await client.listTools();assert.equal(tools.tools.length,25);
     const usageTool=tools.tools.find(t=>t.name==='usage_capabilities');
     assert.equal(usageTool?.annotations?.readOnlyHint,true);
     assert.ok(tools.tools.some(t=>t.name==='project_prepare_batch'));
@@ -27,6 +27,13 @@ test('stdio protocol lists tools and resources, validates arguments, exposes hon
     const usageData=JSON.parse(usage.content.find(c=>c.type==='text')!.text).data;
     assert.equal(usageData.capabilities[0].id,'bim');
     assert.equal(usageData.capabilities[0].nativeExecutionVerified,false);
+    const axis=await client.callTool({name:'alignment_design_preview',arguments:{kind:'alignment',units:'m',crs:'local test',points:[[0,0],[100,0]]}});
+    const axisData=JSON.parse(axis.content.find(c=>c.type==='text')!.text).data;
+    assert.equal(axisData.metrics.lengthM,100);assert.equal(axisData.valid,true);assert.equal(axisData.nativeExecutionVerified,false);
+    const drain=await client.callTool({name:'drainage_design_preview',arguments:{kind:'drainage',units:'m',crs:'local',nodes:[{id:'a',x:0,y:0,invertZ:2},{id:'b',x:10,y:0,invertZ:3}],links:[{id:'p',from:'a',to:'b',diameterM:.5}]}});
+    assert.equal(JSON.parse(drain.content.find(c=>c.type==='text')!.text).data.valid,false);
+    const missingJob=await client.callTool({name:'operation_status',arguments:{operationId:crypto.randomUUID()}});
+    assert.equal(JSON.parse(missingJob.content.find(c=>c.type==='text')!.text).error.code,'OPERATION_NOT_FOUND');
     const invalidUsage=await client.callTool({name:'usage_capabilities',arguments:{offset:-1}});
     assert.equal(invalidUsage.isError,true);
     const status=await client.callTool({name:'istram_detect',arguments:{}});

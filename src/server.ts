@@ -9,20 +9,27 @@ import { DomainError, readDocument, safeChild } from './io.js';
 import { inspectProjectDirectory, ProjectStore } from './projects.js';
 import { Jobs } from './jobs.js';
 import { worker } from './bridge.js';
-import { readUsageCatalogue, usageCapabilities } from './capabilities.js';
+import { readUsageCatalogue, usageCapabilities, workflowPlan } from './capabilities.js';
+import {alignmentSchema,drainageSchema,sectionSchema,designSchema,designPreview,prepareDesignPackage} from './designs.js';
 
 const textPath=z.string().min(1).max(4096);
 const requestId=z.string().min(1).max(128);
 export function createServer(){
-  const server=new McpServer({name:'istram-mcp',version:'0.2.0-rc.1'});
+  const server=new McpServer({name:'istram-mcp',version:'0.3.0-rc.1'});
   const workspace=process.env.ISTRAM_WORKSPACE ?? fileURLToPath(new URL('../.local/projects',import.meta.url));
   const projects=new ProjectStore(workspace,async(changes,root)=>{await worker('idle',{changes,projectPath:root});});
   const jobs=new Jobs(path.join(workspace,'..','jobs'));
+  register('alignment_design_preview','Validate an explicit metre-based XY polyline and compute stations/azimuths. Does not create native curves or write CEJ.',alignmentSchema,true,a=>designPreview(a));
+  register('drainage_design_preview','Check pipe topology, invert gradients, vertical drops at nodes and endpoint cover. Does not certify hydraulics or create native pipes/manholes.',drainageSchema,true,a=>designPreview(a));
+  register('section_design_preview','Check ordered local section outlines for ditches, boxes, walls, tunnels and details. Reports intersections, area and perimeter; no structural/hydraulic certification.',sectionSchema,true,a=>designPreview(a));
+  register('design_package_prepare','Write new DXF interchange geometry and a JSON design record in managed-copy metadata only. No native project files are replaced; import and calculation remain required.',z.object({projectId:z.string().uuid(),requestId,design:designSchema}),false,a=>prepareDesignPackage(projects.path(a.projectId),a.requestId,a.design));
+  register('usage_workflow_plan','Read available preparation tools, source evidence, inputs and native acceptance blockers for each ISTRAM capability.',z.object({capabilityId:z.string().min(1).max(100)}),true,a=>workflowPlan(a.capabilityId));
+  register('project_changes_preview','Read a paginated prepared/applied change plan, hashes and batch summary without returning all element details.',z.object({projectId:z.string().uuid(),requestId,offset:z.number().int().min(0).default(0),limit:z.number().int().min(1).max(500).default(100)}),true,a=>projects.preview(a.projectId,a.requestId,a.offset,a.limit));
   register('project_prepare_batch','Prepare explicit reviewed text changes for up to 1000 listed elements on a managed copy. Shared-file conflicts are rejected; no design files are changed. Apply still requires a verified format profile.',z.object({
-    projectId:z.string().uuid(),requestId,elements:z.array(z.object({elementId:z.string().min(1).max(256),changes:z.array(z.object({
+    projectId:z.string().uuid(),requestId,summaryOnly:z.boolean().default(false),elements:z.array(z.object({elementId:z.string().min(1).max(256),changes:z.array(z.object({
       file:textPath,line:z.number().int().positive(),expected:z.string(),replacement:z.string()
     })).min(1).max(100)})).min(1).max(1000)
-  }),false,a=>projects.prepareBatch(a.projectId,a.requestId,a.elements));
+  }),false,a=>{const plan=projects.prepareBatch(a.projectId,a.requestId,a.elements);return a.summaryOnly?projects.preview(a.projectId,a.requestId,0,20):plan;});
   register('usage_capabilities','Read evidence-backed ISTRAM usage requirements, current coverage and acceptance criteria. Proposed tools are not executable recipes.',z.object({
     query:z.string().max(500).optional(),capabilityId:z.string().max(100).optional(),offset:z.number().int().min(0).default(0),limit:z.number().int().min(1).max(50).default(10)
   }),true,a=>usageCapabilities(a));
@@ -50,9 +57,9 @@ export function createServer(){
   register('alignment_read','Read .ALI numeric rows, preserving unknown records; geometry interpretation is not certified for writes.',z.object({filePath:textPath}),true,a=>parseAliFile(a.filePath));
   register('profile_read','Read .ras numeric profile rows with strict number validation.',z.object({filePath:textPath}),true,a=>parseRasFile(a.filePath));
   register('ifc_entity_types','Read all available IFC mapping rows and entity names; does not imply licensed export.',z.object({}),true,()=>readIfcMappings(detectIstramEnvironment().basePath));
-  register('native_records_read','Inspect raw .cej/.vol/.pol/.per/.beg/.atf records without guessing their geometry semantics.',z.object({filePath:textPath}),true,a=>{
+  register('native_records_read','Inspect paginated raw native text records without guessing geometry semantics.',z.object({filePath:textPath,offset:z.number().int().min(0).default(0),limit:z.number().int().min(1).max(1000).default(200)}),true,a=>{
     if(!/\.(cej|vol|pol|per|beg|atf|act|cfg)$/i.test(a.filePath))throw new DomainError('UNSUPPORTED_FORMAT','Unsupported native text format');
-    const doc=readDocument(a.filePath);return {sha256:doc.sha256,encoding:doc.encoding,records:parseNativeContent(doc.text),writeValidated:false};
+    const doc=readDocument(a.filePath),records=parseNativeContent(doc.text);return {sha256:doc.sha256,encoding:doc.encoding,total:records.length,offset:a.offset,limit:a.limit,records:records.slice(a.offset,a.offset+a.limit),writeValidated:false};
   });
   register('project_copy','Copy project files into the managed workspace and verify copied-file hashes. Optional explicit top-level directory exclusions are recorded; unsaved session data is not captured.',z.object({sourcePath:textPath,excludeDirectories:z.array(z.string().min(1).max(255)).max(10).default([])}),false,a=>projects.copy(a.sourcePath,a.excludeDirectories));
   register('project_prepare_changes','Prepare exact line changes on a managed copy; no native model is changed. Review unknown format semantics before applying.',z.object({projectId:z.string().uuid(),requestId,changes:z.array(z.object({file:textPath,line:z.number().int().positive(),expected:z.string(),replacement:z.string()})).min(1).max(100)}),false,a=>projects.prepare(a.projectId,a.requestId,a.changes));
@@ -61,17 +68,24 @@ export function createServer(){
   register('worker_health','Check Python and optional Windows/IFC dependencies.',z.object({}),true,()=>worker('health'));
   register('session_snapshot','Inspect live ISTRAM windows and control identifiers without changing the model.',z.object({}),true,()=>worker('snapshot'));
   register('operation_start','Start a verified Windows recipe on a managed copy. Unknown versions or unverified recipes are refused.',z.object({
-    projectId:z.string().uuid(),requestId,action:z.enum(['open_project','save','recalculate','bim_configure','bim_generate','bim_export']),projectFile:z.string().optional(),outputFile:z.string().optional()
+    projectId:z.string().uuid(),requestId,action:z.enum(['open_project','close_project','save','recalculate','bim_configure','bim_generate','bim_export']),projectFile:z.string().optional(),outputFile:z.string().optional()
   }),false,a=>{
     const root=projects.path(a.projectId);
     const params:Record<string,unknown>={action:a.action,projectPath:root};
     if(a.projectFile)params.projectFile=safeChild(root,a.projectFile);
     if(a.outputFile)params.outputPath=safeChild(root,a.outputFile);
-    return jobs.start(a.requestId,a,'istram-session',()=>worker('action',params,30*60*1000));
+    return jobs.start(a.requestId,a,'istram-session',async()=>{
+      if(!projects.verifySource(a.projectId))throw new DomainError('SOURCE_CHANGED','Original copied files differ from their inventory; inspect before native execution');
+      try{return await worker('action',params,30*60*1000);}
+      finally{if(!projects.verifySource(a.projectId))throw new DomainError('OUTCOME_UNCERTAIN','Original copied files changed during the native operation; inspect before recovery');}
+    });
   });
   register('operation_status','Inspect durable operation status, including uncertain outcomes after crashes.',z.object({operationId:z.string().uuid()}),true,a=>jobs.get(a.operationId));
   register('operation_cancel','Cancel only before native execution begins; never kill ISTRAM to cancel.',z.object({operationId:z.string().uuid()}),false,a=>jobs.cancel(a.operationId));
-  register('ifc_validate','Validate IFC schema/WHERE rules, project units, required PSETs and optional geometry using IfcOpenShell.',z.object({filePath:textPath,expectedSchema:z.string().optional(),requiredPsets:z.array(z.string()).default([]),geometry:z.boolean().default(false)}),true,a=>worker('ifc_validate',a,30*60*1000));
+  register('ifc_validate','Validate IFC schema, geometry and optional project-specific expectations for product counts, metre scale, projected CRS and property values. Does not prove native export or engineering quantities.',z.object({filePath:textPath,expectedSchema:z.string().optional(),requiredPsets:z.array(z.string()).default([]),geometry:z.boolean().default(false),
+    minGeometryProducts:z.number().int().min(1).optional(),minProducts:z.number().int().min(1).optional(),expectedLengthUnitToMetres:z.number().finite().positive().optional(),expectedProjectedCrs:z.string().min(1).optional(),
+    requiredProperties:z.array(z.object({entityType:z.string().min(1).default('IfcElement'),pset:z.string().min(1),property:z.string().min(1),expectedValue:z.union([z.string(),z.number().finite(),z.boolean()]).optional()})).max(100).default([])
+  }),true,a=>worker('ifc_validate',a,30*60*1000));
   for(const [name,uri,read] of [
     ['system_status','istram://system/status',()=>detectIstramEnvironment()],
     ['ifc_classes','istram://ifc/classes',()=>readIfcMappings(detectIstramEnvironment().basePath)],

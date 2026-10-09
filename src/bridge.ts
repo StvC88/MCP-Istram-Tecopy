@@ -1,9 +1,11 @@
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import fs from 'node:fs';
 import { DomainError } from './io.js';
 
 export async function worker(method:string,params:Record<string,unknown>={},timeoutMs=30000):Promise<Record<string,unknown>>{
-  const python=process.env.ISTRAM_PYTHON ?? (process.platform==='win32'?'python':'python3');
+  const localPython=fileURLToPath(new URL(process.platform==='win32'?'../.venv/Scripts/python.exe':'../.venv/bin/python',import.meta.url));
+  const python=process.env.ISTRAM_PYTHON ?? (fs.existsSync(localPython)?localPython:(process.platform==='win32'?'python':'python3'));
   const file=fileURLToPath(new URL('../python/worker.py',import.meta.url));
   return new Promise((resolve,reject)=>{
     const child=spawn(python,['-u',file],{windowsHide:true,stdio:['pipe','pipe','pipe'],env:process.env});

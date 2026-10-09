@@ -1,5 +1,7 @@
 # Revisión de uso de ISTRAM para MCP-Istram-Tecopy
 
+Actualización 0.3: [implementación y nueva verificación](IMPLEMENTATION_0_3.md). Ahora hay 25 herramientas, 16 transcripciones revisadas y un inventario de las 13 fuentes del cuaderno confirmado en la interfaz. El análisis siguiente conserva el estado histórico de la base 0.2; sus brechas nativas continúan pendientes salvo los controles y preparación que detalla la actualización.
+
 Fecha: 9 de octubre de 2026. Base examinada: `codex/istram-stable`, commit `4c7b86add90e62fa91f628e8de965f919517dcfb`, propuesta #1, versión candidata 0.2.0-rc.1.
 
 El MCP tiene una base útil de consulta, gestión de copias y coordinación de operaciones. Para cubrir los usos investigados necesita modelos semánticos de proyecto/superficies/secciones y un adaptador nativo contrastado. Un catálogo de teclado, una edición de líneas y un IFC válido sintácticamente no demuestran que el flujo de diseño se ejecute correctamente.

@@ -1,6 +1,6 @@
 {
   "name": "istram-mcp",
-  "version": "0.2.0-rc.1",
+  "version": "0.3.0-rc.1",
   "description": "Local MCP for ISTRAM/ISPOL with evidence-based diagnostics and recoverable project changes",
   "type": "module",
   "main": "dist/index.js",
@@ -15,8 +15,11 @@
     "typecheck": "tsc --noEmit",
     "start": "node dist/index.js",
     "test": "npm run build && node --test dist/tests/*.test.js",
-    "test:python": "python -m unittest discover -s python -p test_*.py",
-    "test:acceptance": "node scripts/acceptance.mjs"
+    "test:python": "node scripts/python.mjs -m unittest discover -s python -p test_*.py",
+    "test:acceptance": "npm run build && node scripts/acceptance.mjs",
+    "doctor": "npm run build && node scripts/doctor.mjs",
+    "smoke": "npm run build && node scripts/smoke.mjs",
+    "test:dxf": "node scripts/python.mjs python/check_dxf.py"
   },
   "dependencies": {
     "@modelcontextprotocol/server": "2.3.1",

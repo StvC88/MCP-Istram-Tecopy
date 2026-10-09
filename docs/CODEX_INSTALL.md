@@ -24,6 +24,8 @@ Si una ruta tiene espacios, encerrarla entre comillas. La configuración de Code
 
 Comprobar tools/list, worker_health y project_inspect. worker_health intenta importar las dependencias y presenta los errores reales, además de indicar si existe un perfil de adaptador. Que las dependencias estén disponibles no certifica acceso a la sesión ni ejecución nativa.
 
+En 0.3 ejecutar `npm run doctor` y `npm run smoke`: el primero debe mostrar 25 herramientas y el segundo utiliza solo una copia sintética. Instalar `python/requirements-test.txt` y ejecutar `npm run test:dxf` para lectura independiente de los siete paquetes. Python detecta `.venv` del repositorio si ISTRAM_PYTHON no está configurado. Tras actualizar, recompilar y recargar el servidor MCP o reiniciar Codex para que tools/list incorpore las herramientas nuevas.
+
 session_snapshot requiere acceso a los procesos y ventanas de la sesión interactiva de Windows. Un error de tasklist o del backend debe registrarse como fallo de inspección; no concluir que ISTRAM está cerrado.
 
 Antes de modificar, crear una copia gestionada y abrir ISTRAM **en esa carpeta de trabajo** mediante su lanzador. Las acciones MCP de escritura y cálculo requieren el perfil de aceptación descrito en [ADAPTER.md](ADAPTER.md).

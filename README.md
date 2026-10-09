@@ -2,11 +2,12 @@
 
 Conecta un cliente de IA con ISTRAM/ISPOL mediante [Model Context Protocol](https://modelcontextprotocol.io/). El cliente solicita herramientas; el servidor consulta datos del proyecto y coordina las operaciones de ISTRAM.
 
-**Estado: versión candidata 0.2.0-rc.1 para revisión técnica.** Las consultas, el protocolo y los cambios en copias tienen pruebas automatizadas. El control nativo y el flujo BIM requieren validación con ISTRAM.
+**Estado: versión candidata 0.3.0-rc.1 para revisión técnica.** Incluye 25 herramientas MCP y preparación de geometría para ejes, tuberías y contornos de cunetas, cajones, muros, túneles y detalles. La importación, cálculo y persistencia nativos siguen pendientes de un adaptador certificado.
 
 ## Revisar el proyecto
 
-- [Revisión de usos y brechas](docs/USAGE_REVIEW.md): 24 áreas, inventario de 120 vídeos, 15 transcripciones contrastadas y consultas al cuaderno «ISTRAM Clases Chile».
+- [Implementación y comprobaciones 0.3](docs/IMPLEMENTATION_0_3.md): cambios, ejemplos y límites de uso por otras personas.
+- [Revisión de usos y brechas](docs/USAGE_REVIEW.md): 24 áreas, inventario de 120 vídeos, 16 transcripciones contrastadas y cuaderno «ISTRAM Clases Chile» con 13 fuentes confirmadas.
 - [Contratos de capacidades](docs/USAGE_CAPABILITIES.md): parámetros, cobertura real y aceptación por área; consultables con `usage_capabilities`.
 - [Edición por lotes](docs/BATCH_EDIT.md): preparación por listado de elementos con conflictos de archivos compartidos y recuperación.
 
@@ -21,6 +22,7 @@ Conecta un cliente de IA con ISTRAM/ISPOL mediante [Model Context Protocol](http
 - Preparar cambios sobre copias, comprobar hashes y recuperar archivos.
 - Consultar la sesión de Windows y ejecutar operaciones mediante recetas locales verificadas.
 - Validar IFC con IfcOpenShell.
+- Comprobar pendientes, conexiones y recubrimientos en extremos de tuberías; obtener contornos y paquetes DXF/JSON trazables en copias.
 
 El catálogo de comandos es una referencia documental. No implica que todos puedan ejecutarse mediante el MCP. No se distribuye un adaptador certificado.
 
@@ -42,7 +44,11 @@ npm run build
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r python/requirements.txt
 .\.venv\Scripts\python.exe -m unittest discover -s python -p "test_*.py"
+npm run doctor
+npm run smoke
 ~~~
+
+Para verificar DXF con un lector independiente: instalar `python/requirements-test.txt` y ejecutar `npm run test:dxf` después de `npm run smoke`. El trabajador detecta automáticamente `.venv`; `ISTRAM_PYTHON` permite elegir otro intérprete. Cada instalación necesita su propia licencia y aceptación nativa.
 
 Configurar el cliente con [examples/mcp.json](examples/mcp.json). Solo requiere rutas locales; la IA pertenece al cliente MCP.
 

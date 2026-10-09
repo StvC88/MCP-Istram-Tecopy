@@ -1,5 +1,7 @@
 # Capacidades de uso y contratos propuestos
 
+Actualización 0.3: `usage_workflow_plan` y el catálogo JSON incluyen la preparación geométrica y nuevas herramientas descritas en [IMPLEMENTATION_0_3.md](IMPLEMENTATION_0_3.md). Los contratos siguientes conservan el alcance de diseño completo; un contorno o paquete DXF no satisface su aceptación nativa.
+
 Cada contrato es una propuesta para desarrollar el MCP. Ningún nombre de herramienta propuesto corresponde a una API oficial confirmada ni se registra como operación ejecutable.
 El catálogo consultable `usage_capabilities` expone estos mismos requisitos. Cobertura actual parcial significa lectores o infraestructura, no el flujo nativo completo.
 

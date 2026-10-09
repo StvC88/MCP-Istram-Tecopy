@@ -22,9 +22,16 @@ export function inspectProjectDirectory(projectPath:string) {
       id:r.values[0],initialStation:r.values[1],title:r.values.slice(3).join(' '),source:path.relative(root,f)})));
     return {file,title:records.find(r=>r.tag==='TP')?.values.join(' ')??'',references:refs,axes,sha256:doc.sha256};
   });
+  const grouped=new Map<string,{file:string;missing:boolean;external:boolean;occurrences:{project:string;tag:string}[]}>();
+  for(const p of projects)for(const r of p.references.filter(r=>!r.exists||r.external)){
+    const absolute=path.resolve(root,path.dirname(p.file),r.file),key=process.platform==='win32'?absolute.toLowerCase():absolute;
+    const warning=grouped.get(key)??{file:r.file,missing:!r.exists,external:r.external,occurrences:[]};
+    warning.occurrences.push({project:p.file,tag:r.tag});grouped.set(key,warning);
+  }
+  const dependencyWarnings=[...grouped.values()];
   return {projectDir:root,filesCount:files.length,alignmentsCount:ext('.ali').length,profilesCount:ext('.ras').length,
     hasIfc:ext('.ifc').length>0,projects,nativeFiles:{cej:ext('.cej'),vol:ext('.vol'),per:ext('.per')},
-    warnings:projects.flatMap(p=>p.references.filter(r=>!r.exists||r.external).map(r=>'Unresolved or external reference: '+r.file))};
+    dependencyWarnings,warnings:dependencyWarnings.map(r=>(r.missing?'Missing reference: ':'External reference: ')+r.file+' ('+r.occurrences.length+' occurrences)')};
 }
 export type Change={file:string;line:number;expected:string;replacement:string};
 export type BatchElement={elementId:string;changes:Change[]};
@@ -47,10 +54,10 @@ export class ProjectStore {
     const original=fs.realpathSync(source);
     if(within(original,this.workspace)||within(this.workspace,original))throw new DomainError('OVERLAPPING_PATHS','Source and workspace must be disjoint');
     const excluded=new Set(excludeDirectories.map(d=>process.platform==='win32'?d.toLowerCase():d));
-    const all=walk(original),list=all.filter(f=>{
-      const parts=f.split(path.sep);
-      return parts.length===1 || !excluded.has(process.platform==='win32'?parts[0]!.toLowerCase():parts[0]!);
-    }),id=randomUUID(),root=path.join(this.workspace,id);
+    const excludedEntries=fs.readdirSync(original,{withFileTypes:true}).filter(e=>excluded.has(process.platform==='win32'?e.name.toLowerCase():e.name));
+    if(excludedEntries.some(e=>e.isFile()))throw new DomainError('INVALID_EXCLUSION','Only top-level directories can be excluded');
+    const excludedDirectoriesPresent=excludedEntries.map(e=>e.name);
+    const list=walk(original,25000,excluded),id=randomUUID(),root=path.join(this.workspace,id);
     fs.mkdirSync(root,{recursive:false});
     const inventory:Record<string,string>={};
     try{
@@ -60,11 +67,11 @@ export class ProjectStore {
         const bytes=fs.readFileSync(from);inventory[file]=hash(bytes);
         if(hash(fs.readFileSync(to))!==inventory[file])throw new DomainError('COPY_MISMATCH','Source changed during copy');
       }
-      atomicJson(path.join(root,'.istram-mcp','copy.json'),{id,source:original,createdAt:new Date().toISOString(),inventory,excludeDirectories,excludedFilesCount:all.length-list.length});
-      return {projectId:id,projectPath:root,filesCount:list.length,excludeDirectories,excludedFilesCount:all.length-list.length,
+      atomicJson(path.join(root,'.istram-mcp','copy.json'),{id,source:original,createdAt:new Date().toISOString(),inventory,excludeDirectories,excludedDirectoriesPresent,excludedFilesCount:excludedDirectoriesPresent.length?null:0});
+      return {projectId:id,projectPath:root,filesCount:list.length,excludeDirectories,excludedDirectoriesPresent,excludedFilesCount:excludedDirectoriesPresent.length?null:0,
         verificationScope:'copied_files_only',sourceUnchangedVerified:this.verifySource(id),
         warning:'Disk snapshot only; unsaved session data and explicitly excluded directories are not copied.'};
-    }catch(e){throw new DomainError('COPY_FAILED','Partial copy retained for inspection',{root,cause:String(e)});}
+    }catch(e){throw new DomainError('COPY_FAILED','Partial copy retained for inspection; it is not a managed copy',{projectId:id,root,cause:String(e)});}
   }
   path(id:string){return this.project(id);}
   verifySource(id:string){
@@ -135,6 +142,14 @@ export class ProjectStore {
     if(!fs.existsSync(file))throw new DomainError('PLAN_NOT_FOUND','No prepared changes for request ID');
     return {root,file,plan:JSON.parse(fs.readFileSync(file,'utf8')) as Plan};
   }
+  preview(id:string,requestId:string,offset=0,limit=100){
+    const {plan}=this.plan(id,requestId);
+    return {id:plan.id,requestId:plan.requestId,fingerprint:plan.fingerprint,status:plan.status,
+      totalChanges:plan.changes.length,offset,limit,changes:plan.changes.slice(offset,offset+limit),
+      totalFiles:Object.keys(plan.before).length,files:Object.keys(plan.before).slice(offset,offset+limit).map(file=>({file,beforeSha256:plan.before[file],afterSha256:plan.after[file]})),
+      batch:plan.batch?{elementsCount:plan.batch.elements.length,inputChanges:plan.batch.inputChanges,uniqueChanges:plan.batch.uniqueChanges,filesCount:plan.batch.filesCount}:undefined,
+      nativeRecalculated:false};
+  }
   private lock(root:string){
     const file=path.join(root,'.istram-mcp','write.lock');
     try{const fd=fs.openSync(file,'wx');fs.writeFileSync(fd,JSON.stringify({pid:process.pid,time:new Date().toISOString()}));fs.closeSync(fd);}
@@ -186,11 +201,14 @@ export class ProjectStore {
         if(!fs.existsSync(backup)&&current===beforeHash)continue;
         if(hash(fs.readFileSync(backup))!==beforeHash)throw new DomainError('CORRUPT_BACKUP','Backup hash mismatch');
       }
+      plan.status='uncertain';atomicJson(file,plan);
       for(const [relative,beforeHash] of entries){
         const target=safeChild(root,relative),temp=target+'.'+randomUUID()+'.restore.tmp';
         if(hash(fs.readFileSync(target))===beforeHash)continue;
         fs.copyFileSync(path.join(root,'.istram-mcp','backups',plan.id,relative),temp,fs.constants.COPYFILE_EXCL);fs.renameSync(temp,target);
       }
+      if(!entries.every(([relative,beforeHash])=>hash(fs.readFileSync(safeChild(root,relative)))===beforeHash))
+        throw new DomainError('VERIFY_FAILED','Restored file hashes differ from the original plan');
       plan.status='restored';atomicJson(file,plan);return plan;
     }finally{release();}
   }

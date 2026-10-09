@@ -82,7 +82,8 @@ test('copy exclusions are explicit and verification covers copied files only',t=
   const store=new ProjectStore(path.join(base,'work'));
   assert.throws(()=>store.copy(source,['../outside']),/top-level/);
   const copy=store.copy(source,['tmp']);
-  assert.equal(copy.filesCount,1);assert.equal(copy.excludedFilesCount,1);
+  assert.equal(copy.filesCount,1);assert.equal(copy.excludedFilesCount,null);
+  assert.deepEqual(copy.excludedDirectoriesPresent,['tmp']);
   assert.equal(copy.verificationScope,'copied_files_only');
   assert.equal(fs.existsSync(path.join(copy.projectPath,'tmp')),false);
   fs.writeFileSync(path.join(source,'tmp','locked'),'changed scratch');

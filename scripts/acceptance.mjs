@@ -3,12 +3,11 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { Client } from '@modelcontextprotocol/client';
 import { StdioClientTransport } from '@modelcontextprotocol/client/stdio';
+import {validateScenario,checkAssertions} from '../dist/acceptance.js';
 
 const input=process.argv[2];
 if(!input)throw new Error('Usage: npm run test:acceptance -- local-scenario.json. See docs/ACCEPTANCE.md.');
-const scenario=JSON.parse(fs.readFileSync(input,'utf8'));
-if(!scenario.sourceReviewComplete||!scenario.nativeGeometryReviewComplete)throw new Error('Source review and geometry review must be completed first');
-if(!Array.isArray(scenario.steps)||!scenario.steps.length)throw new Error('Scenario must contain verified model changes and native operation steps');
+const scenario=validateScenario(JSON.parse(fs.readFileSync(input,'utf8')));
 const reportDir=path.resolve('artifacts/acceptance');fs.mkdirSync(reportDir,{recursive:true});
 async function call(client,name,args){
   const result=await client.callTool({name,arguments:args});
@@ -33,9 +32,9 @@ for(let session=1;session<=2;session++){
   await client.connect(transport);
   try{
     for(let n=1;n<=10;n++){
-      const runId=crypto.randomUUID(),report={runId,session:'session-'+session,startedAt:new Date().toISOString(),success:false,steps:[]};
+      const runId=crypto.randomUUID(),report={runId,clientConnection:session,startedAt:new Date().toISOString(),success:false,nativeSessionIds:[],engineeringAssertionsPassed:false,steps:[]};
       try{
-        const copy=await call(client,'project_copy',{sourcePath:scenario.sourcePath});
+        const copy=await call(client,'project_copy',{sourcePath:scenario.sourcePath,excludeDirectories:scenario.excludeDirectories});
         const vars={runId,projectId:copy.projectId,projectPath:copy.projectPath};
         for(const step of scenario.steps){
           const args=expand(step.arguments,vars);
@@ -48,13 +47,17 @@ for(let session=1;session<=2;session++){
               result=await call(client,'operation_status',{operationId:data.id});
             }while(['pending','running'].includes(result.state)&&Date.now()<deadline);
             if(result.state!=='completed')throw new Error('Native operation did not complete: '+JSON.stringify(result));
+            if(!result.result?.nativeSessionId||!result.result.workingDirectoryVerified)throw new Error('Native session and directory evidence missing');
+            if(!report.nativeSessionIds.includes(result.result.nativeSessionId))report.nativeSessionIds.push(result.result.nativeSessionId);
+            checkAssertions(result.result,step.assertions);
             report.steps.push({tool:step.tool,result});
-          }else report.steps.push({tool:step.tool,result:data});
+          }else {checkAssertions(data,step.assertions);report.steps.push({tool:step.tool,result:data});}
           if(step.tool==='ifc_validate'&&!data.valid)throw new Error('IFC validation failed');
         }
         // An external ISTRAM session is not force-closed by the evaluator.
         // Supply a reviewed close-session step in the recipe or close it normally between runs.
-        report.success=true;
+        if(report.nativeSessionIds.length<2)throw new Error('Save/reopen must use two distinct native sessions');
+        report.engineeringAssertionsPassed=true;report.success=true;
       }catch(error){report.error=String(error);}
       report.finishedAt=new Date().toISOString();
       fs.writeFileSync(path.join(reportDir,runId+'.json'),JSON.stringify(report,null,2));
