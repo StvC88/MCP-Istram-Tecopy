@@ -1,6 +1,6 @@
 # Primera prueba con una sesión abierta
 
-**Estado: preparada; no ejecutada sobre el proyecto activo.**
+**Estado: conexión y consultas ejecutadas; prueba 2D asistida por interfaz realizada.** Véase [resultado y límites](LIVE_TEST_2D.md). La ejecución nativa mediante recetas MCP no está certificada.
 
 ## Antes de probar
 
@@ -23,7 +23,11 @@ Resultado: conexión, herramientas y consultas comprobadas. Esta prueba no certi
 
 ## Prueba posterior en copia
 
-Usar project_copy e identificar inequívocamente la copia cargada. Comprobar eje, rasante, sección, alternativas y grupos activos antes de calcular.
+Usar project_copy e identificar inequívocamente la copia cargada. Comprobar además la **carpeta actual de la sesión**: cargar un POL con ruta absoluta no cambia necesariamente el directorio de trabajo. La ayuda instalada arranque.html indica seleccionar la carpeta de trabajo en el lanzador antes de iniciar ISTRAM. Los archivos de recuperación y resultados temporales pueden escribirse en el directorio anterior aunque el título muestre la copia.
+
+Si una sesión mantiene archivos bloqueados, project_copy admite excludeDirectories con nombres explícitos de carpetas del primer nivel. Las exclusiones se registran en el inventario: no constituyen una copia completa ni una verificación de los archivos excluidos. En la prueba se excluyeron tmp y res; no aplicar esas exclusiones automáticamente a otros proyectos.
+
+Comprobar eje, rasante, sección, alternativas y grupos activos antes de calcular. Para la primera prueba geométrica, calcular solo el eje de prueba y registrar sus propios errores.
 
 Según la ayuda instalada OL_BIM_opciones.html, el proyecto debe estar calculado antes de generar BIM; la selección del árbol determina el alcance. Registrar el nodo seleccionado y los objetos activos antes de generar o exportar.
 

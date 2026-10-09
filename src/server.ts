@@ -54,7 +54,7 @@ export function createServer(){
     if(!/\.(cej|vol|pol|per|beg|atf|act|cfg)$/i.test(a.filePath))throw new DomainError('UNSUPPORTED_FORMAT','Unsupported native text format');
     const doc=readDocument(a.filePath);return {sha256:doc.sha256,encoding:doc.encoding,records:parseNativeContent(doc.text),writeValidated:false};
   });
-  register('project_copy','Copy a project into the managed workspace and verify source/copy hashes.',z.object({sourcePath:textPath}),false,a=>projects.copy(a.sourcePath));
+  register('project_copy','Copy project files into the managed workspace and verify copied-file hashes. Optional explicit top-level directory exclusions are recorded; unsaved session data is not captured.',z.object({sourcePath:textPath,excludeDirectories:z.array(z.string().min(1).max(255)).max(10).default([])}),false,a=>projects.copy(a.sourcePath,a.excludeDirectories));
   register('project_prepare_changes','Prepare exact line changes on a managed copy; no native model is changed. Review unknown format semantics before applying.',z.object({projectId:z.string().uuid(),requestId,changes:z.array(z.object({file:textPath,line:z.number().int().positive(),expected:z.string(),replacement:z.string()})).min(1).max(100)}),false,a=>projects.prepare(a.projectId,a.requestId,a.changes));
   register('project_apply_changes','Apply prepared changes with journal and backup. Requires verified binary-matched adapter and idle ISTRAM.',z.object({projectId:z.string().uuid(),requestId}),false,a=>projects.apply(a.projectId,a.requestId));
   register('project_restore_changes','Restore a managed copy if no subsequent edits conflict; never overwrite original projects.',z.object({projectId:z.string().uuid(),requestId}),false,a=>projects.restore(a.projectId,a.requestId));

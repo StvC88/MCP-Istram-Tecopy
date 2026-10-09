@@ -7,6 +7,17 @@ import unittest
 import worker
 
 class WorkerTest(unittest.TestCase):
+    def test_snapshot_includes_istramx_and_skips_launcher(self):
+        from unittest.mock import MagicMock, patch
+        application = MagicMock()
+        application.return_value.connect.return_value.windows.return_value = []
+        active = [{"name": "istramX.exe", "pid": 42}, {"name": "Arranque.exe", "pid": 43}]
+        import types
+        with patch.object(worker, "processes", return_value=active), patch.dict(sys.modules, {"pywinauto": types.SimpleNamespace(Application=application)}):
+            result = worker.snapshot()
+        self.assertEqual([s["pid"] for s in result["snapshots"]], [42])
+        application.return_value.connect.assert_called_once_with(process=42, timeout=10)
+
     def test_protocol_health_and_unknown(self):
         for method, ok in [("health", True), ("arbitrary_python", False)]:
             result=subprocess.run([sys.executable,str(Path(worker.__file__))],input=json.dumps({"id":"a","method":method}),

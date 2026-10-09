@@ -41,10 +41,16 @@ export class ProjectStore {
     if(!fs.existsSync(path.join(root,'.istram-mcp','copy.json')))throw new DomainError('NOT_MANAGED_COPY','Expected a managed copy');
     return root;
   }
-  copy(source:string){
+  copy(source:string,excludeDirectories:string[]=[]){
+    if(excludeDirectories.length>10 || excludeDirectories.some(d=>!d || d==='.' || d==='..' || /[\\/:]/.test(d)))
+      throw new DomainError('INVALID_EXCLUSION','Expected at most 10 top-level directory names');
     const original=fs.realpathSync(source);
     if(within(original,this.workspace)||within(this.workspace,original))throw new DomainError('OVERLAPPING_PATHS','Source and workspace must be disjoint');
-    const list=walk(original),id=randomUUID(),root=path.join(this.workspace,id);
+    const excluded=new Set(excludeDirectories.map(d=>process.platform==='win32'?d.toLowerCase():d));
+    const all=walk(original),list=all.filter(f=>{
+      const parts=f.split(path.sep);
+      return parts.length===1 || !excluded.has(process.platform==='win32'?parts[0]!.toLowerCase():parts[0]!);
+    }),id=randomUUID(),root=path.join(this.workspace,id);
     fs.mkdirSync(root,{recursive:false});
     const inventory:Record<string,string>={};
     try{
@@ -54,8 +60,10 @@ export class ProjectStore {
         const bytes=fs.readFileSync(from);inventory[file]=hash(bytes);
         if(hash(fs.readFileSync(to))!==inventory[file])throw new DomainError('COPY_MISMATCH','Source changed during copy');
       }
-      atomicJson(path.join(root,'.istram-mcp','copy.json'),{id,source:original,createdAt:new Date().toISOString(),inventory});
-      return {projectId:id,projectPath:root,filesCount:list.length,sourceUnchangedVerified:this.verifySource(id)};
+      atomicJson(path.join(root,'.istram-mcp','copy.json'),{id,source:original,createdAt:new Date().toISOString(),inventory,excludeDirectories,excludedFilesCount:all.length-list.length});
+      return {projectId:id,projectPath:root,filesCount:list.length,excludeDirectories,excludedFilesCount:all.length-list.length,
+        verificationScope:'copied_files_only',sourceUnchangedVerified:this.verifySource(id),
+        warning:'Disk snapshot only; unsaved session data and explicitly excluded directories are not copied.'};
     }catch(e){throw new DomainError('COPY_FAILED','Partial copy retained for inspection',{root,cause:String(e)});}
   }
   path(id:string){return this.project(id);}

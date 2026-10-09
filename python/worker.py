@@ -55,7 +55,7 @@ def snapshot():
     from pywinauto import Application
     snapshots=[]
     for proc in active:
-        if proc["name"].lower() != "istram.exe":
+        if proc["name"].lower() not in ("istram.exe", "istramx.exe"):
             continue
         app=Application(backend="uia").connect(process=proc["pid"], timeout=10)
         windows=[]
@@ -221,9 +221,17 @@ def validate_ifc(params):
 
 def dispatch(method, params):
     if method=="health":
-        import importlib.util
-        return {"platform":sys.platform,"python":sys.version,"pywinauto":bool(importlib.util.find_spec("pywinauto")),
-            "ifcopenshell":bool(importlib.util.find_spec("ifcopenshell")),"profileConfigured":bool(os.environ.get("ISTRAM_ADAPTER_PROFILE"))}
+        import importlib
+        dependencies = {}
+        for name in ("pywinauto", "ifcopenshell"):
+            try:
+                importlib.import_module(name)
+                dependencies[name] = {"available": True}
+            except Exception as error:
+                dependencies[name] = {"available": False, "error": str(error)}
+        return {"platform":sys.platform,"python":sys.version,"pywinauto":dependencies["pywinauto"]["available"],
+            "ifcopenshell":dependencies["ifcopenshell"]["available"],"dependencies":dependencies,
+            "profileConfigured":bool(os.environ.get("ISTRAM_ADAPTER_PROFILE"))}
     if method=="snapshot":return snapshot()
     if method=="idle":
         profile,_ = load_profile()

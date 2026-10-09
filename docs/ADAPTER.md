@@ -10,6 +10,8 @@ Cada paso incluye window (selector pywinauto), selector (control), kind (invoke,
 
 projectGuard debe identificar un control cuyo valor confirme la ruta completa del proyecto cargado; no basta con un título genérico "ISTRAM". Se debe verificar también después de open_project.
 
+La aceptación debe verificar por separado la carpeta actual de ISTRAM y su igualdad con projectPath. Una ruta de POL/CEJ en el título no prueba el directorio de trabajo: la prueba asistida detectó recuperaciones y resultados temporales en la carpeta anterior. open_project arranca con work_dir igual a la copia; cualquier receta candidata debe contrastarlo en pantalla antes de permitir guardado o cálculo. No reutilizar una sesión ajena para eludir SESSION_BUSY.
+
 Postcondiciones: una comprobación explícita de texto y, cuando corresponda, artefactos nuevos o modificados. Una comprobación visual genérica no certifica un recálculo. La exportación BIM se valida además con ifc_validate.
 
 La inspección session_snapshot sirve para obtener selectores reales. Ejecutar el evaluador de aceptación solo con recetas ya revisadas, en copias, con la sesión supervisada. El modo candidato debe permanecer ausente de las variables del cliente de IA.

@@ -74,6 +74,22 @@ test('copy edit verify idempotency restore and original hashes',async t=>{
   assert.equal(hash(fs.readFileSync(path.join(source,'road.cfg'))),original);
   assert.equal(store.verifySource(copy.projectId),true);
 });
+
+test('copy exclusions are explicit and verification covers copied files only',t=>{
+  const base=fixture(t),source=path.join(base,'source');fs.mkdirSync(source);
+  fs.mkdirSync(path.join(source,'tmp'));fs.writeFileSync(path.join(source,'tmp','locked'),'scratch');
+  fs.writeFileSync(path.join(source,'road.cej'),'EJE 1 0 1 Test');
+  const store=new ProjectStore(path.join(base,'work'));
+  assert.throws(()=>store.copy(source,['../outside']),/top-level/);
+  const copy=store.copy(source,['tmp']);
+  assert.equal(copy.filesCount,1);assert.equal(copy.excludedFilesCount,1);
+  assert.equal(copy.verificationScope,'copied_files_only');
+  assert.equal(fs.existsSync(path.join(copy.projectPath,'tmp')),false);
+  fs.writeFileSync(path.join(source,'tmp','locked'),'changed scratch');
+  assert.equal(store.verifySource(copy.projectId),true);
+  fs.writeFileSync(path.join(source,'road.cej'),'changed design');
+  assert.equal(store.verifySource(copy.projectId),false);
+});
 test('concurrent edits and stale expected content fail without changing files',async t=>{
   const base=fixture(t),source=path.join(base,'source');fs.mkdirSync(source);
   fs.writeFileSync(path.join(source,'road.cfg'),'width 7\n');
