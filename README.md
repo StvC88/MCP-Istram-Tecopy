@@ -43,7 +43,9 @@ Configurar el cliente con [examples/mcp.json](examples/mcp.json). Solo requiere 
 
 ## Prueba en ISTRAM
 
-La primera prueba sobre una sesión abierta será de consulta. Antes de guardar, recalcular o exportar se contrastarán manuales, curso y selectores reales. El flujo de modificación y BIM se probará en una copia identificada del proyecto. [Procedimiento de aceptación](docs/ACCEPTANCE.md).
+La primera prueba sobre una sesión abierta será de consulta. Antes de guardar, recalcular o exportar se contrastarán manuales, curso y selectores reales. El flujo de modificación y BIM se probará en una copia identificada del proyecto. [Primera prueba de sesión](docs/SESSION_TEST.md) y [aceptación](docs/ACCEPTANCE.md).
+
+[Resultados de pruebas de la base](docs/VALIDATION.md). La prueba nativa sigue pendiente.
 
 ## Documentación
 

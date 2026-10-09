@@ -20,7 +20,14 @@ Fecha de investigación: 2026-10-09.
 
 - Canal solicitado: https://www.youtube.com/@AlexMatosd/videos. No fue posible leer el canal completo o transcripciones mediante las superficies disponibles.
 - Cuaderno solicitado: https://notebook.google.com/notebook/66dd8f87-9726-490d-a9ce-739b73aee63. El conector informa no autenticado; la consulta falló. No se presume contenido.
-- Ayuda local observada: util/Ayuda (340 HTML), comandos.cfg, configuración de librerías y mapeos IFC. Solo se publican referencias y conclusiones; no se redistribuye material del fabricante.
+- Vídeos y curso completos: pendientes de acceso y revisión antes de la prueba de sesión.
+
+## Material local revisado
+
+- Ayuda instalada: arranque.html, OL_proyecto.html, OL_BIM_opciones.html, OL_BIM_arbol.html y OL_rasantes_ficheros.html. Se revisaron apartados relevantes para preparar la consulta y el flujo BIM; no todo el conjunto de 340 páginas.
+- Respaldo bibliográfico: índice y síntesis de las clases Chile 1–9, ODT, RCEclass, seguimiento y superficies. Son material secundario; no equivalen a leer las fuentes originales del cuaderno ni sus vídeos.
+- El inventario local indica un enlace de cuaderno terminado en ee639; el enlace recibido termina en ee63. Falta confirmar el identificador completo.
+- comandos.cfg, configuración de librerías y mapeos IFC observados en la instalación. Se publican referencias y conclusiones, no copias de material del fabricante.
 
 ## Proceso de incorporación
 
