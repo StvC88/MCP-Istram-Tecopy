@@ -17,13 +17,31 @@ export async function worker(method:string,params:Record<string,unknown>={},time
     child.stderr.on('data',data=>{if(errors.length<4096)errors+=String(data);});
     child.on('close',code=>{
       if(done)return;done=true;clearTimeout(timer);
-      try{
-        const response=JSON.parse(output);
-        if(!response.ok)reject(new DomainError(response.error.code,response.error.message,response.error.details));
-        else if(code!==0)reject(new DomainError('WORKER_FAILED','Worker exit '+code));
-        else resolve(response.result);
-      }catch(e){reject(new DomainError(method==='action'?'OUTCOME_UNCERTAIN':'WORKER_PROTOCOL','Invalid worker response',{exitCode:code,stderr:errors}));}
+      try{resolve(decodeWorkerResponse(method,output,code,errors));}
+      catch(e){reject(e);}
     });
     child.stdin.end(JSON.stringify({id:crypto.randomUUID(),method,params})+'\n');
   });
+}
+
+// Keep an explicit worker rejection distinct from malformed output. Native UI
+// failures after a mutation are already reported as OUTCOME_UNCERTAIN by Python.
+export function decodeWorkerResponse(method:string,output:string,code:number|null,stderr:string):Record<string,unknown>{
+  let response:unknown;
+  try{response=JSON.parse(output);}catch{
+    throw new DomainError(method==='action'?'OUTCOME_UNCERTAIN':'WORKER_PROTOCOL','Invalid worker response',{exitCode:code,stderr});
+  }
+  if(!response || typeof response!=='object' || !('ok' in response) || typeof response.ok!=='boolean')
+    throw new DomainError(method==='action'?'OUTCOME_UNCERTAIN':'WORKER_PROTOCOL','Invalid worker response envelope',{exitCode:code,stderr});
+  if(!response.ok){
+    if(!('error' in response) || !response.error || typeof response.error!=='object' ||
+      !('code' in response.error) || typeof response.error.code!=='string' ||
+      !('message' in response.error) || typeof response.error.message!=='string')
+      throw new DomainError(method==='action'?'OUTCOME_UNCERTAIN':'WORKER_PROTOCOL','Invalid worker error envelope',{exitCode:code,stderr});
+    throw new DomainError(response.error.code,response.error.message,'details' in response.error?response.error.details:undefined);
+  }
+  if(code!==0)throw new DomainError(method==='action'?'OUTCOME_UNCERTAIN':'WORKER_FAILED','Worker exit '+code);
+  if(!('result' in response) || !response.result || typeof response.result!=='object' || Array.isArray(response.result))
+    throw new DomainError(method==='action'?'OUTCOME_UNCERTAIN':'WORKER_PROTOCOL','Invalid worker result envelope',{exitCode:code,stderr});
+  return response.result as Record<string,unknown>;
 }

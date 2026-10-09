@@ -6,6 +6,10 @@ Conecta un cliente de IA con ISTRAM/ISPOL mediante [Model Context Protocol](http
 
 ## Revisar el proyecto
 
+- [Revisión de usos y brechas](docs/USAGE_REVIEW.md): 24 áreas, inventario de 120 vídeos, 15 transcripciones contrastadas y consultas al cuaderno «ISTRAM Clases Chile».
+- [Contratos de capacidades](docs/USAGE_CAPABILITIES.md): parámetros, cobertura real y aceptación por área; consultables con `usage_capabilities`.
+- [Edición por lotes](docs/BATCH_EDIT.md): preparación por listado de elementos con conflictos de archivos compartidos y recuperación.
+
 - [Código y cambios propuestos](https://github.com/StvC88/MCP-Istram-Tecopy/pull/1).
 - [Guía breve para Buhodra Ingeniería](docs/REVIEW.md): recorrido del código y decisiones que necesitan contraste con el fabricante.
 - [Alcance del MCP](docs/SCOPE.md): áreas oficiales y orden de desarrollo.

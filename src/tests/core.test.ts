@@ -91,6 +91,24 @@ test('unverified adapter prevents actual writes',async t=>{
   store.prepare(copy.projectId,'request',[{file:'road.cfg',line:1,expected:'width 7',replacement:'width 8'}]);
   await assert.rejects(()=>store.apply(copy.projectId,'request'),/verified/);
 });
+
+test('restore passes the managed copy and format changes to the production idle guard',async t=>{
+  const base=fixture(t),source=path.join(base,'source');fs.mkdirSync(source);
+  fs.writeFileSync(path.join(source,'road.cfg'),'width 7');
+  const observed:{root:string|undefined;changes:unknown}[]=[];
+  const store=new ProjectStore(path.join(base,'work'),async(changes,root)=>{
+    assert.ok(root,'The worker needs projectPath for managed-copy verification');
+    observed.push({root,changes});
+  });
+  const copy=store.copy(source),changes=[{file:'road.cfg',line:1,expected:'width 7',replacement:'width 8'}];
+  store.prepare(copy.projectId,'restore-guard',changes);
+  await store.apply(copy.projectId,'restore-guard');
+  await store.restore(copy.projectId,'restore-guard');
+  assert.equal(observed.length,2);
+  assert.equal(observed[1]!.root,copy.projectPath);
+  assert.deepEqual(observed[1]!.changes,changes);
+  assert.equal(fs.readFileSync(path.join(copy.projectPath,'road.cfg'),'utf8'),'width 7');
+});
 test('durable jobs deduplicate requests, serialize and preserve uncertain outcomes',async t=>{
   const jobs=new Jobs(path.join(fixture(t),'jobs'));
   let calls=0;

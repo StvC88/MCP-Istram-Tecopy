@@ -17,6 +17,18 @@ test('stdio protocol lists tools and resources, validates arguments, exposes hon
   try{
     await client.connect(transport);
     const tools=await client.listTools();assert.ok(tools.tools.length>=17);
+    const usageTool=tools.tools.find(t=>t.name==='usage_capabilities');
+    assert.equal(usageTool?.annotations?.readOnlyHint,true);
+    assert.ok(tools.tools.some(t=>t.name==='project_prepare_batch'));
+    const invalidBatch=await client.callTool({name:'project_prepare_batch',arguments:{projectId:'bad',requestId:'batch',elements:[]}});
+    assert.equal(invalidBatch.isError,true);
+    const usage=await client.callTool({name:'usage_capabilities',arguments:{capabilityId:'bim'}});
+    assert.equal(usage.isError,undefined);
+    const usageData=JSON.parse(usage.content.find(c=>c.type==='text')!.text).data;
+    assert.equal(usageData.capabilities[0].id,'bim');
+    assert.equal(usageData.capabilities[0].nativeExecutionVerified,false);
+    const invalidUsage=await client.callTool({name:'usage_capabilities',arguments:{offset:-1}});
+    assert.equal(invalidUsage.isError,true);
     const status=await client.callTool({name:'istram_detect',arguments:{}});
     assert.equal(status.isError,undefined);
     const data=JSON.parse(status.content.find(c=>c.type==='text')!.text);
@@ -26,6 +38,9 @@ test('stdio protocol lists tools and resources, validates arguments, exposes hon
     const missing=await client.callTool({name:'profile_read',arguments:{filePath:path.join(dir,'missing.ras')}});
     assert.equal(missing.isError,true);
     const resources=await client.listResources();assert.ok(resources.resources.some(r=>r.uri==='istram://system/status'));
+    assert.ok(resources.resources.some(r=>r.uri==='istram://usage/capabilities'));
+    const usageResource=await client.readResource({uri:'istram://usage/capabilities'});
+    assert.ok('text' in usageResource.contents[0]!);
     const coverage=await client.readResource({uri:'istram://system/coverage'});
     const first=coverage.contents[0]!;
     assert.ok('text' in first);
