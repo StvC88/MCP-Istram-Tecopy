@@ -10,7 +10,7 @@ Servidor MCP stdio con el SDK oficial; lectores; copias y recuperación; cola de
 
 1. Revisar ayuda oficial instalada y guías oficiales en línea. Registrar documento, revisión y procedimiento.
 2. Contrastar el curso del cuaderno indicado con sus fuentes originales. Las síntesis locales ayudan a preparar la revisión; no sustituyen las clases completas.
-3. Revisar los vídeos del canal solicitado y aclarar la referencia a «Aldo». Registrar enlaces y marcas de tiempo de cada flujo utilizado.
+3. Completar el contraste de fuentes a partir de la [revisión de uso](USAGE_REVIEW.md): 120 títulos inventariados, 15 transcripciones contrastadas y 24 contratos propuestos. Registrar enlaces y marcas temporales de cada receta.
 4. Consultar la sesión activa, identificar el proyecto abierto y verificar que la consulta no cambia archivos.
 5. Emitir un informe local con resultados y pendientes. Los datos del proyecto no se suben a GitHub.
 
@@ -26,4 +26,4 @@ Buhodra revisará primero el contrato de herramientas, formatos y método de aut
 
 ## Pendientes
 
-Acceso completo a vídeos y cuaderno; identificación de la sesión/proyecto; prueba nativa; perfil certificado. El estado de CI es independiente de estos pendientes.
+Consulta MCP al cuaderno e inventario del canal realizados. Pendientes: revisión audiovisual/original íntegra; identificación de la sesión/proyecto; contratos nativos parametrizados; prueba nativa; perfil certificado. El estado de CI es independiente de estos pendientes.

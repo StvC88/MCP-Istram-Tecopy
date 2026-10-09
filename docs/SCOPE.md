@@ -21,6 +21,8 @@ El orden es una decisión del proyecto MCP, no una recomendación publicada por 
 
 ## Cobertura actual
 
+La [revisión de uso](USAGE_REVIEW.md) amplía el alcance en 24 contratos funcionales. Se inventariaron 120 vídeos y se contrastaron 15 transcripciones, con consultas al cuaderno solicitado y material aportado sobre edición por lotes. El catálogo `usage_capabilities` informa qué existe y qué está propuesto; no habilita las acciones nativas descritas. Ver [evidencia](USAGE_EVIDENCE.md).
+
 Lectura parcial de datos de instalación, proyecto y formatos; copias y cambios recuperables; motor de recetas y validación IFC. Ningún flujo nativo completo está certificado.
 
 El catálogo de teclado no cubre por sí solo todas las soluciones. Cada incorporación necesita procedimiento documentado, contrato de argumentos, módulos requeridos, resultado verificable y prueba de aceptación.

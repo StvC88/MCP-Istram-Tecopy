@@ -27,8 +27,10 @@ export function inspectProjectDirectory(projectPath:string) {
     warnings:projects.flatMap(p=>p.references.filter(r=>!r.exists||r.external).map(r=>'Unresolved or external reference: '+r.file))};
 }
 export type Change={file:string;line:number;expected:string;replacement:string};
+export type BatchElement={elementId:string;changes:Change[]};
+type BatchSummary={elements:{elementId:string;targets:{file:string;line:number}[]}[];inputChanges:number;uniqueChanges:number;filesCount:number};
 type Plan={id:string;requestId:string;fingerprint:string;status:'prepared'|'applied'|'restored'|'uncertain';changes:Change[];
-  before:Record<string,string>;after:Record<string,string>;createdAt:string};
+  before:Record<string,string>;after:Record<string,string>;createdAt:string;batch?:BatchSummary};
 export class ProjectStore {
   constructor(public workspace:string,private assertIdle:(changes?:Change[],root?:string)=>Promise<void>=async()=>{throw new DomainError('ADAPTER_REQUIRED','Native writes require a verified Windows adapter');}) {
     fs.mkdirSync(workspace,{recursive:true});this.workspace=fs.realpathSync(workspace);
@@ -63,9 +65,36 @@ export class ProjectStore {
       const file=safeChild(meta.source,f);return fs.existsSync(file)&&hash(fs.readFileSync(file))===h;
     });
   }
-  prepare(id:string,requestId:string,changes:Change[]){
+  prepareBatch(id:string,requestId:string,elements:BatchElement[]){
+    if(!elements.length || elements.length>1000)throw new DomainError('BATCH_LIMIT','Expected 1 to 1000 elements');
+    const count=elements.reduce((n,e)=>n+e.changes.length,0);
+    if(count>10000)throw new DomainError('BATCH_LIMIT','Batch exceeds 10000 input changes');
+    const root=this.project(id),seenIds=new Set<string>();
+    const unique=new Map<string,Change>();
+    const manifest:BatchSummary['elements']=[];
+    for(const element of elements){
+      if(!element.elementId || seenIds.has(element.elementId))throw new DomainError('DUPLICATE_ELEMENT','Element IDs must be nonempty and unique');
+      if(!element.changes.length)throw new DomainError('EMPTY_ELEMENT','Each element needs an explicit reviewed change');
+      seenIds.add(element.elementId);
+      const targets:{file:string;line:number}[]=[];
+      for(const input of element.changes){
+        const absolute=fs.realpathSync(safeChild(root,input.file));
+        const file=path.relative(root,absolute),canonical=process.platform==='win32'?absolute.toLowerCase():absolute;
+        const key=canonical+':'+input.line,change={...input,file};
+        const previous=unique.get(key);
+        if(previous && (previous.expected!==change.expected || previous.replacement!==change.replacement))
+          throw new DomainError('BATCH_CONFLICT','Elements request incompatible changes to a shared file',{file,line:input.line,elementId:element.elementId});
+        if(!previous)unique.set(key,change);
+        targets.push({file:previous?.file??file,line:input.line});
+      }
+      manifest.push({elementId:element.elementId,targets});
+    }
+    const changes=[...unique.values()];
+    return this.prepare(id,requestId,changes,{elements:manifest,inputChanges:count,uniqueChanges:changes.length,filesCount:new Set(changes.map(c=>c.file)).size});
+  }
+  prepare(id:string,requestId:string,changes:Change[],batch?:BatchSummary){
     const root=this.project(id),dir=path.join(root,'.istram-mcp','plans');
-    const fingerprint=hash(JSON.stringify(changes)),key=hash(requestId),file=path.join(dir,key+'.json');
+    const fingerprint=hash(JSON.stringify(batch?{changes,batch}:changes)),key=hash(requestId),file=path.join(dir,key+'.json');
     if(fs.existsSync(file)){
       const existing=JSON.parse(fs.readFileSync(file,'utf8')) as Plan;
       if(existing.fingerprint!==fingerprint)throw new DomainError('IDEMPOTENCY_CONFLICT','Request ID already has different changes');
@@ -73,7 +102,7 @@ export class ProjectStore {
     }
     const seen=new Set<string>(),before:Record<string,string>={},after:Record<string,string>={};
     for(const change of changes){
-      if(!/\.(cfg|csv|ali|ras|cej|vol|pol|beg|atf|act)$/i.test(change.file))
+      if(!/\.(cfg|csv|ali|ras|cej|vol|per|pol|beg|atf|act)$/i.test(change.file))
         throw new DomainError('UNSUPPORTED_FORMAT','Unsupported writable file extension');
       if(/[\r\n]/.test(change.replacement))throw new DomainError('MULTILINE_PATCH','A change must replace exactly one line');
       if(!Number.isInteger(change.line)||change.line<1)throw new DomainError('INVALID_LINE','Expected one-based line number');
@@ -90,7 +119,7 @@ export class ProjectStore {
       }
       after[relative]=hash(encodeDocument(lines.join(''),doc));
     }
-    const plan:Plan={id:key,requestId,fingerprint,status:'prepared',changes,before,after,createdAt:new Date().toISOString()};
+    const plan:Plan={id:key,requestId,fingerprint,status:'prepared',changes,before,after,createdAt:new Date().toISOString(),...(batch?{batch}:{})};
     atomicJson(file,plan);return {...plan,warning:'Prepared changes are not geometry-validated or recalculated. Apply requires verified adapter.'};
   }
   private plan(id:string,requestId:string){
@@ -140,7 +169,7 @@ export class ProjectStore {
     try{
       if(plan.status==='restored')return plan;
       if(!['uncertain','applied'].includes(plan.status))throw new DomainError('NO_BACKUP','No applied change to restore');
-      await this.assertIdle();
+      await this.assertIdle(plan.changes,root);
       const entries=Object.entries(plan.before);
       for(const [relative,beforeHash] of entries){
         const target=safeChild(root,relative),current=hash(fs.readFileSync(target));

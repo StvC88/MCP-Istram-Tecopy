@@ -16,17 +16,22 @@ Fecha de investigación: 2026-10-09.
 - ISTRAM: https://istram.net/descargas/ y https://istram.net/novedades-istram-10-2026/ — las descargas requieren sesión de cliente.
 - Publicación de Alex Matos sobre transformar una rasante dibujada en AutoCAD en datos de ISTRAM: https://es.linkedin.com/posts/alex-matos-ag_rasante-desde-autocad-a-istram-activity-7153212226038874112-RRAG. Se consultó la descripción escrita del autor; no se verificó el procedimiento completo del vídeo.
 
-## Acceso pendiente, obligatorio antes de certificar recetas
+## Actualización de revisión de uso
 
-- Canal solicitado: https://www.youtube.com/@AlexMatosd/videos. No fue posible leer el canal completo o transcripciones mediante las superficies disponibles.
-- Cuaderno solicitado: https://notebook.google.com/notebook/66dd8f87-9726-490d-a9ce-739b73aee63. El conector informa no autenticado; la consulta falló. No se presume contenido.
-- Vídeos y curso completos: pendientes de acceso y revisión antes de la prueba de sesión.
+Acceso al cuaderno correcto confirmado por MCP: https://notebook.google.com/notebook/66dd8f87-9726-490d-a9ce-739b73aee639. Título «ISTRAM Clases Chile». Dos consultas sustantivas identificaron las áreas del curso y las 13 fuentes reportadas por Gemini, incluida Clase 8. No se presume verificación original independiente de las síntesis.
+
+Canal revisado mediante Browser: 120 títulos inventariados y 15 transcripciones automáticas contrastadas. [Evidencia con marcas temporales](USAGE_EVIDENCE.md), [inventario](research/alex-matos-videos.tsv) y [revisión](USAGE_REVIEW.md). Continúa pendiente la revisión íntegra audiovisual y el contraste de fuentes originales para certificar cada receta.
+
+## Limitaciones anteriores, resueltas parcialmente por esta revisión
+
+- El acceso anterior al canal y cuaderno había fallado. El enlace incompleto terminaba en ee63; el enlace correcto facilitado ahora termina en ee639.
+- La consulta e inventario actuales resuelven ese acceso; no equivalen a la revisión completa de todos los vídeos y clases antes de la prueba de sesión.
 
 ## Material local revisado
 
 - Ayuda instalada: arranque.html, OL_proyecto.html, OL_BIM_opciones.html, OL_BIM_arbol.html y OL_rasantes_ficheros.html. Se revisaron apartados relevantes para preparar la consulta y el flujo BIM; no todo el conjunto de 340 páginas.
 - Respaldo bibliográfico: índice y síntesis de las clases Chile 1–9, ODT, RCEclass, seguimiento y superficies. Son material secundario; no equivalen a leer las fuentes originales del cuaderno ni sus vídeos.
-- El inventario local indica un enlace de cuaderno terminado en ee639; el enlace recibido termina en ee63. Falta confirmar el identificador completo.
+- Identificador completo confirmado por el enlace actual y la consulta MCP: 66dd8f87-9726-490d-a9ce-739b73aee639.
 - comandos.cfg, configuración de librerías y mapeos IFC observados en la instalación. Se publican referencias y conclusiones, no copias de material del fabricante.
 
 ## Proceso de incorporación

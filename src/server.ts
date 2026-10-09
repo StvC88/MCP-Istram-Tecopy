@@ -9,6 +9,7 @@ import { DomainError, readDocument, safeChild } from './io.js';
 import { inspectProjectDirectory, ProjectStore } from './projects.js';
 import { Jobs } from './jobs.js';
 import { worker } from './bridge.js';
+import { readUsageCatalogue, usageCapabilities } from './capabilities.js';
 
 const textPath=z.string().min(1).max(4096);
 const requestId=z.string().min(1).max(128);
@@ -17,6 +18,14 @@ export function createServer(){
   const workspace=process.env.ISTRAM_WORKSPACE ?? fileURLToPath(new URL('../.local/projects',import.meta.url));
   const projects=new ProjectStore(workspace,async(changes,root)=>{await worker('idle',{changes,projectPath:root});});
   const jobs=new Jobs(path.join(workspace,'..','jobs'));
+  register('project_prepare_batch','Prepare explicit reviewed text changes for up to 1000 listed elements on a managed copy. Shared-file conflicts are rejected; no design files are changed. Apply still requires a verified format profile.',z.object({
+    projectId:z.string().uuid(),requestId,elements:z.array(z.object({elementId:z.string().min(1).max(256),changes:z.array(z.object({
+      file:textPath,line:z.number().int().positive(),expected:z.string(),replacement:z.string()
+    })).min(1).max(100)})).min(1).max(1000)
+  }),false,a=>projects.prepareBatch(a.projectId,a.requestId,a.elements));
+  register('usage_capabilities','Read evidence-backed ISTRAM usage requirements, current coverage and acceptance criteria. Proposed tools are not executable recipes.',z.object({
+    query:z.string().max(500).optional(),capabilityId:z.string().max(100).optional(),offset:z.number().int().min(0).default(0),limit:z.number().int().min(1).max(50).default(10)
+  }),true,a=>usageCapabilities(a));
   function register<S extends z.ZodObject>(name:string,description:string,schema:S,readOnly:boolean,run:(args:z.infer<S>)=>unknown|Promise<unknown>){
     const inputSchema: z.ZodObject = schema;
     server.registerTool(name,{description,inputSchema,annotations:{readOnlyHint:readOnly,destructiveHint:!readOnly,idempotentHint:readOnly,openWorldHint:false}},
@@ -66,6 +75,7 @@ export function createServer(){
   for(const [name,uri,read] of [
     ['system_status','istram://system/status',()=>detectIstramEnvironment()],
     ['ifc_classes','istram://ifc/classes',()=>readIfcMappings(detectIstramEnvironment().basePath)],
+    ['usage_capabilities','istram://usage/capabilities',()=>readUsageCatalogue()],
     ['coverage','istram://system/coverage',()=>({status:'release_candidate',officialScopeUrl:'https://istram.net/istram/caracteristicas/soluciones/',priority:'model_configuration_and_bim',nativeRecipesVerified:false,stableAcceptancePassed:false,sourceReviewComplete:false})],
   ] as const){
     server.registerResource(name,uri,{mimeType:'application/json'},async url=>({contents:[{uri:url.href,mimeType:'application/json',text:JSON.stringify(read())}]}));
