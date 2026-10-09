@@ -2,6 +2,11 @@
 
 Fecha de investigación: 2026-10-09.
 
+## Alcance acordado
+
+- [Soluciones oficiales](https://istram.net/istram/caracteristicas/soluciones/), consultada el 2026-10-09. Referencia principal de alcance indicada por el usuario.
+- [Características](https://istram.net/istram/caracteristicas/), consultada el 2026-10-09. Complementa módulos y OpenBIM.
+
 ## Primarias consultadas
 
 - SDK MCP TypeScript: https://github.com/modelcontextprotocol/typescript-sdk — v2 estable, especificación 2026-07-28; paquetes 2.3.1 comprobados en npm.

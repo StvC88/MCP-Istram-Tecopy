@@ -1,5 +1,7 @@
 # Revisión técnica para Buhodra Ingeniería
 
+Alcance acordado: [soluciones oficiales y fases del MCP](SCOPE.md).
+
 ## Objetivo
 
 Comprobar una integración MCP sencilla y mantenible para consultar proyectos y, tras validar el adaptador, controlar configuración, cálculo y BIM en ISTRAM/ISPOL.

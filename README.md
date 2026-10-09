@@ -8,6 +8,7 @@ Conecta un cliente de IA con ISTRAM/ISPOL mediante [Model Context Protocol](http
 
 - [Código y cambios propuestos](https://github.com/StvC88/MCP-Istram-Tecopy/pull/1).
 - [Guía breve para Buhodra Ingeniería](docs/REVIEW.md): recorrido del código y decisiones que necesitan contraste con el fabricante.
+- [Alcance del MCP](docs/SCOPE.md): áreas oficiales y orden de desarrollo.
 - [Plan vigente](docs/PLAN.md): pasos hasta la prueba con el proyecto abierto.
 
 ## Qué incluye

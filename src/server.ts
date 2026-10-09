@@ -66,7 +66,7 @@ export function createServer(){
   for(const [name,uri,read] of [
     ['system_status','istram://system/status',()=>detectIstramEnvironment()],
     ['ifc_classes','istram://ifc/classes',()=>readIfcMappings(detectIstramEnvironment().basePath)],
-    ['coverage','istram://system/coverage',()=>({status:'release_candidate',nativeRecipesVerified:false,stableAcceptancePassed:false,sourceReviewComplete:false})],
+    ['coverage','istram://system/coverage',()=>({status:'release_candidate',officialScopeUrl:'https://istram.net/istram/caracteristicas/soluciones/',priority:'model_configuration_and_bim',nativeRecipesVerified:false,stableAcceptancePassed:false,sourceReviewComplete:false})],
   ] as const){
     server.registerResource(name,uri,{mimeType:'application/json'},async url=>({contents:[{uri:url.href,mimeType:'application/json',text:JSON.stringify(read())}]}));
   }

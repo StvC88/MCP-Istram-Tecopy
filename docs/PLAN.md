@@ -1,5 +1,7 @@
 # Plan vigente
 
+Alcance general: las [soluciones oficiales de ISTRAM](https://istram.net/istram/caracteristicas/soluciones/). Prioridad y cobertura: [docs/SCOPE.md](SCOPE.md).
+
 ## Base implementada
 
 Servidor MCP stdio con el SDK oficial; lectores; copias y recuperación; cola de operaciones; trabajador Windows/IFC. El prototipo anterior y su plan han sido retirados.
