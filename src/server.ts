@@ -1,4 +1,4 @@
-import { McpServer } from '@modelcontextprotocol/server';
+import { McpServer, type CallToolResult } from '@modelcontextprotocol/server';
 import * as z from 'zod/v4';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -19,11 +19,11 @@ export function createServer(){
   const jobs=new Jobs(path.join(workspace,'..','jobs'));
   function register<S extends z.ZodObject>(name:string,description:string,schema:S,readOnly:boolean,run:(args:z.infer<S>)=>unknown|Promise<unknown>){
     server.registerTool(name,{description,inputSchema:schema,annotations:{readOnlyHint:readOnly,destructiveHint:!readOnly,idempotentHint:readOnly,openWorldHint:false}},
-      async args=>{
+      async (args):Promise<CallToolResult>=>{
         try{
           const data=await run(schema.parse(args));
           const result={ok:true,data};
-          return {content:[{type:'text' as const,text:JSON.stringify(result)}],structuredContent:result};
+          return {content:[{type:'text' as const,text:JSON.stringify(result)}],structuredContent:JSON.parse(JSON.stringify(result))};
         }catch(e){
           const result={ok:false,error:{code:e instanceof DomainError?e.code:'EXECUTION_FAILED',message:e instanceof Error?e.message:String(e),details:e instanceof DomainError?e.details:undefined}};
           return {isError:true,content:[{type:'text' as const,text:JSON.stringify(result)}],structuredContent:result};

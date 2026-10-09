@@ -1,4 +1,4 @@
-import test from 'node:test';
+import test, { type TestContext } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -9,7 +9,7 @@ import { parseAliContent, parseRasContent } from '../parsers.js';
 import { inspectProjectDirectory, ProjectStore } from '../projects.js';
 import { Jobs } from '../jobs.js';
 
-function fixture(t:test.TestContext){
+function fixture(t:TestContext){
   const root=fs.mkdtempSync(path.join(os.tmpdir(),'istram-test-'));
   t.after(()=>fs.rmSync(root,{recursive:true,force:true}));return root;
 }

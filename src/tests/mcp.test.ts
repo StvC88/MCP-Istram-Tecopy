@@ -27,6 +27,8 @@ test('stdio protocol lists tools and resources, validates arguments, exposes hon
     assert.equal(missing.isError,true);
     const resources=await client.listResources();assert.ok(resources.resources.some(r=>r.uri==='istram://system/status'));
     const coverage=await client.readResource({uri:'istram://system/coverage'});
-    assert.equal(JSON.parse(coverage.contents[0]!.text as string).stableAcceptancePassed,false);
+    const first=coverage.contents[0]!;
+    assert.ok('text' in first);
+    assert.equal(JSON.parse(first.text).stableAcceptancePassed,false);
   }finally{await client.close();fs.rmSync(dir,{recursive:true,force:true});}
 });
