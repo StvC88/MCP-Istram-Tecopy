@@ -18,7 +18,8 @@ export function createServer(){
   const projects=new ProjectStore(workspace,async(changes,root)=>{await worker('idle',{changes,projectPath:root});});
   const jobs=new Jobs(path.join(workspace,'..','jobs'));
   function register<S extends z.ZodObject>(name:string,description:string,schema:S,readOnly:boolean,run:(args:z.infer<S>)=>unknown|Promise<unknown>){
-    server.registerTool(name,{description,inputSchema:schema,annotations:{readOnlyHint:readOnly,destructiveHint:!readOnly,idempotentHint:readOnly,openWorldHint:false}},
+    const inputSchema: z.ZodObject = schema;
+    server.registerTool(name,{description,inputSchema,annotations:{readOnlyHint:readOnly,destructiveHint:!readOnly,idempotentHint:readOnly,openWorldHint:false}},
       async (args):Promise<CallToolResult>=>{
         try{
           const data=await run(schema.parse(args));

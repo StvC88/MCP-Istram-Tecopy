@@ -54,12 +54,12 @@ No se incluye un perfil certificado de ISTRAM: hace falta comprobar controles y 
 
 CI: Ubuntu/Windows, Node 22/24, pruebas de parsers, protocolo y cambios; Python/IFC con un modelo sintético. Estas pruebas no reemplazan la licencia ni las 20 ejecuciones reales acordadas.
 
-Las pruebas reales, la consulta completa del canal Alex Matos y el cuaderno NotebookLM, y la sincronización de la carpeta local siguen pendientes cuando esas superficies no son accesibles. [Fuentes](docs/SOURCES.md), [arquitectura](docs/ARCHITECTURE.md), [aceptación](docs/ACCEPTANCE.md).
+La consulta completa del canal solicitado, el cuaderno NotebookLM y las pruebas nativas supervisadas siguen pendientes. La carpeta local utiliza esta versión candidata; el prototipo 0.1.0 y su plan anterior se han retirado. [Fuentes](docs/SOURCES.md), [arquitectura](docs/ARCHITECTURE.md), [aceptación](docs/ACCEPTANCE.md).
 
 La versión de ISTRAM informada por el registro corresponde a la última sesión observada. Su actualidad y los módulos licenciados se verifican por separado. No modifica ni actualiza la instalación del fabricante.
 
 No publicar proyectos de clientes, licencias, registros personales, binarios ni copias de manuales del fabricante.
 
-## Sincronización local con respaldo
+## Desarrollo local
 
-scripts/sync-local.ps1 muestra primero el destino. Con -Apply clona la rama, instala dependencias, ejecuta pruebas y sustituye la carpeta después de conservar su versión anterior en el Escritorio. No borra el respaldo. Usarlo cuando el entorno local vuelva a permitir procesos y escritura.
+Este repositorio es la única base de desarrollo vigente. Ejecutar npm ci, npm run typecheck y npm test después de sincronizar cambios. Los resultados de CI se consultan en GitHub Actions.
