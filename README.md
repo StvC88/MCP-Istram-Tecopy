@@ -59,3 +59,7 @@ Las pruebas reales, la consulta completa del canal Alex Matos y el cuaderno Note
 La versión de ISTRAM informada por el registro corresponde a la última sesión observada. Su actualidad y los módulos licenciados se verifican por separado. No modifica ni actualiza la instalación del fabricante.
 
 No publicar proyectos de clientes, licencias, registros personales, binarios ni copias de manuales del fabricante.
+
+## Sincronización local con respaldo
+
+scripts/sync-local.ps1 muestra primero el destino. Con -Apply clona la rama, instala dependencias, ejecuta pruebas y sustituye la carpeta después de conservar su versión anterior en el Escritorio. No borra el respaldo. Usarlo cuando el entorno local vuelva a permitir procesos y escritura.

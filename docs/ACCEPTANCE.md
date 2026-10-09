@@ -14,3 +14,10 @@ CI sintética verifica software y protocolo. No certifica la interoperabilidad n
 Cada informe local debe contener: runId, session, versión/hash del ejecutable, perfil, entradas, hashes antes/después, tiempos, resultado de cada paso, validación IFC, tolerancias, discrepancias y success. Conservar capturas cuando aporten evidencia, sin publicarlas.
 
 Solo promover el perfil a verified y publicar versión estable tras cumplir todos los puntos. Si el diseño geométrico no se ha contrastado, la prueba no cuenta como éxito.
+
+
+El evaluador scripts/acceptance.mjs ejecuta un escenario local explícito con twenty operaciones distribuidas en dos conexiones MCP; estas conexiones no demuestran por sí solas dos sesiones de ISTRAM. El escenario debe cerrar ISTRAM normalmente y volver a abrirlo mediante recetas comprobadas o intervención supervisada. No termina el proceso automáticamente.
+
+Formato del escenario: sourcePath, sourceReviewComplete, nativeGeometryReviewComplete y steps (tool y arguments). Variables: {projectId}, {projectPath} y {runId}. Cada solicitud modificadora debe usar requestId único derivado del runId. El evaluador espera las operaciones y guarda informes privados; los resultados se revisan antes de habilitar el perfil.
+
+La certificación no se deduce automáticamente del contador de ejecuciones. Se revisan además los informes de geometría, cantidades, persistencia y los dos identificadores reales de sesión ISTRAM.

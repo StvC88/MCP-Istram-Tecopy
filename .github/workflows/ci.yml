@@ -39,12 +39,44 @@ jobs:
           git add .ci/typecheck.txt
           git commit -m "Record compilation diagnostics" || exit 0
           git push origin HEAD:codex/istram-stable
-      - run: npm test
+      - name: Tests
+        shell: bash
+        run: |
+          set -o pipefail
+          npm test 2>&1 | tee tests.txt
+      - name: Record test diagnostics on development branch
+        if: failure() && matrix.os == 'ubuntu-latest' && matrix.node == '24' && github.event_name == 'push' && github.ref == 'refs/heads/codex/istram-stable'
+        shell: bash
+        run: |
+          test -f tests.txt || exit 0
+          mkdir -p .ci
+          cp tests.txt .ci/tests.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .ci/tests.txt
+          git commit -m "Record test diagnostics" || exit 0
+          git push origin HEAD:codex/istram-stable
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
       - run: python -m pip install -r python/requirements.txt
-      - run: npm run test:python
+      - name: IFC and worker tests
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run test:python 2>&1 | tee python-tests.txt
+      - name: Record Python diagnostics on development branch
+        if: failure() && matrix.os == 'ubuntu-latest' && matrix.node == '24' && github.event_name == 'push' && github.ref == 'refs/heads/codex/istram-stable'
+        shell: bash
+        run: |
+          test -f python-tests.txt || exit 0
+          mkdir -p .ci
+          cp python-tests.txt .ci/python-tests.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .ci/python-tests.txt
+          git commit -m "Record Python diagnostics" || exit 0
+          git push origin HEAD:codex/istram-stable
       - uses: actions/upload-artifact@v4
         if: always()
         with:
