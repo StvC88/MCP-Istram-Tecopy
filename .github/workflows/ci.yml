@@ -1,0 +1,56 @@
+name: CI
+on:
+  push:
+    branches: [main, codex/istram-stable]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        node: ['22', '24']
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Install locked dependencies
+        shell: bash
+        run: |
+          if test -f package-lock.json; then npm ci; else npm install; fi
+      - run: npm run typecheck
+      - run: npm test
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r python/requirements.txt
+      - run: npm run test:python
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dependency-lock-${{ matrix.os }}-${{ matrix.node }}
+          path: package-lock.json
+  lock:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/codex/istram-stable'
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Generate lock once
+        run: |
+          if test -f package-lock.json; then exit 0; fi
+          npm install --package-lock-only --ignore-scripts
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package-lock.json
+          git commit -m "Lock reproducible MCP dependencies"
+          git push origin HEAD:codex/istram-stable
