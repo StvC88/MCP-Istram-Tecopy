@@ -5,48 +5,87 @@ import { atomicJson, DomainError, encodeDocument, hash, readDocument, safeChild,
 import { parseNativeContent } from './parsers.js';
 
 type InspectionOptions = {projectFile?: string; summary?: boolean; includeTemporary?: boolean; offset?: number; limit?: number};
+const isTemporaryProjectFile = (file: string) => ['tmp', 'res'].includes(file.split(path.sep)[0]!.toLowerCase());
 
 export function inspectProjectDirectory(projectPath:string, options: InspectionOptions = {}) {
   const root=fs.realpathSync(projectPath), files=walk(root);
   const ext=(suffix:string)=>files.filter(f=>f.toLowerCase().endsWith(suffix));
-  const temporary = (file: string) => ['tmp', 'res'].includes(file.split(path.sep)[0]!.toLowerCase());
   const selected = options.projectFile === undefined ? undefined : path.relative(root, safeChild(root, options.projectFile));
   const keyFor = (file: string) => process.platform === 'win32' ? file.toLowerCase() : file;
   const knownFiles = new Set(files.map(keyFor));
   const allPols = ext('.pol');
   const pols = allPols.filter(file => selected !== undefined ? keyFor(file) === keyFor(selected) :
-    (options.includeTemporary ?? !options.summary) || !temporary(file));
+    (options.includeTemporary ?? !options.summary) || !isTemporaryProjectFile(file));
   if (selected !== undefined && !pols.length) throw new DomainError('POL_NOT_FOUND', 'Select an existing .pol under projectPath');
+  const persistedBim = files.flatMap(file => {
+    const match = /^ISPOL(\d+)\.b1m$/i.exec(path.basename(file));
+    if (!match || isTemporaryProjectFile(file)) return [];
+    return [{axisId: Number(match[1]), file, bytes: fs.statSync(path.join(root, file)).size}];
+  });
+  const terrainCandidates = files.filter(file => !isTemporaryProjectFile(file) && /\.(edm|edb|sup|ttp|ttg)$/i.test(file));
   const offset = options.offset ?? 0, limit = options.limit ?? 10;
   const projects=(options.summary ? pols.slice(offset, offset + limit) : pols).map(file=>{
     const doc=readDocument(path.join(root,file)),records=parseNativeContent(doc.text);
+    const projectFolder = path.dirname(path.join(root, file));
+    const resolveReference = (tag: string, name: string, directory: string, source: string, line: number) => {
+      const absolute = path.resolve(directory, name);
+      const external = !within(root, absolute);
+      const exists = external ? fs.existsSync(absolute) : knownFiles.has(keyFor(path.relative(root, absolute)));
+      const candidates = [path.resolve(root, name)];
+      if (tag === 'DAR') candidates.push(path.resolve(root, 'lib', name));
+      const match = !exists && !external ? candidates.find(candidate =>
+        within(root, candidate) && knownFiles.has(keyFor(path.relative(root, candidate)))) : undefined;
+      return {tag, file:name, exists, external, candidate: match && path.relative(root, match), source, line};
+    };
     const refs=records.flatMap(record=>{
-      if(!['CEJ','VOL','VOLV','PER','PERV','DT','TOP','EDM'].includes(record.tag))return[];
-      const names=record.values.filter(v=>/\.(cej|vol|per|edm|top|ttp|toc|dtv|dof)$/i.test(v));
-      return names.map(name=>{
-        const absolute=path.resolve(path.dirname(path.join(root,file)),name);
-        const external = !within(root,absolute);
-        const exists = external ? fs.existsSync(absolute) : knownFiles.has(keyFor(path.relative(root,absolute)));
-        const rootMatch = path.resolve(root,name);
-        const candidate = !exists && !external && within(root,rootMatch) && knownFiles.has(keyFor(path.relative(root,rootMatch)))
-          ? path.relative(root,rootMatch) : undefined;
-        return {tag:record.tag,file:name,exists,external,candidate};
-      });
+      if(!['CEJ','VOL','VOLV','PER','PERV','DT','TOP','EDM','DAR'].includes(record.tag))return[];
+      const names=record.tag === 'EDM' && /\.(edm|edb)$/i.test(record.values.join(' '))
+        ? [record.values.join(' ')]
+        : record.values.filter(v=>/\.(cej|vol|per|edm|edb|top|ttp|toc|dtv|dof|dar)$/i.test(v));
+      return names.map(name=>resolveReference(record.tag,name,projectFolder,file,record.line));
     });
+    const volumeFiles = new Set(refs.filter(ref=>['VOL','VOLV'].includes(ref.tag) && !ref.external)
+      .flatMap(ref=>ref.exists ? [path.resolve(projectFolder,ref.file)] : ref.candidate ? [path.join(root,ref.candidate)] : []));
+    const missingOrUnreadableVolumeFiles: string[] = [];
+    for (const volume of volumeFiles) {
+      const relative = path.relative(root, volume);
+      try {
+        for (const record of parseNativeContent(readDocument(volume).text)) {
+          const name = record.values[2];
+          if (record.tag === 'L' && name && /\.lon$/i.test(name)) {
+            refs.push(resolveReference('LON', name, path.dirname(volume), relative, record.line));
+          }
+        }
+      } catch (error) {
+        if (!(error instanceof DomainError) || !['BINARY_FILE','FILE_TOO_LARGE'].includes(error.code)) throw error;
+        missingOrUnreadableVolumeFiles.push(relative);
+      }
+    }
     const axisFiles=refs.filter(r=>r.tag==='CEJ'&&r.exists&&!r.external).map(r=>path.resolve(path.dirname(path.join(root,file)),r.file));
     const axes=axisFiles.flatMap(f=>parseNativeContent(readDocument(f).text).filter(r=>r.tag==='EJE').map(r=>({
       id:r.values[0],initialStation:r.values[1],title:r.values.slice(3).join(' '),source:path.relative(root,f)})));
-    return {file,title:records.find(r=>r.tag==='TP')?.values.join(' ')??'',references:refs,axes,sha256:doc.sha256};
+    const axisIds = new Set(axes.map(axis => Number(axis.id)));
+    const alzadoAxisIds = [...new Set(records.filter(record => record.tag === 'ALZ')
+      .map(record => Number(record.values[1])).filter(id => axisIds.has(id)))].sort((a,b)=>a-b);
+    const bim = persistedBim.filter(item =>
+      [path.dirname(file), '.'].includes(path.dirname(item.file)) && axisIds.has(item.axisId));
+    const cachedAxisIds = new Set(bim.filter(item => item.bytes > 0).map(item => item.axisId));
+    const modelLoadEvidence = {
+      alzadoAxisIds, persistedBim: bim, terrainCandidates, unreadableVolumeFiles: missingOrUnreadableVolumeFiles,
+      alzadoAxisIdsWithoutNonemptyBim: alzadoAxisIds.filter(id => !cachedAxisIds.has(id)),
+      liveTreeVerified: false
+    };
+    return {file,title:records.find(r=>r.tag==='TP')?.values.join(' ')??'',references:refs,axes,modelLoadEvidence,sha256:doc.sha256};
   });
-  const grouped=new Map<string,{file:string;missing:boolean;external:boolean;candidate?:string;occurrences:{project:string;tag:string}[]}>();
+  const grouped=new Map<string,{file:string;missing:boolean;external:boolean;candidate?:string;occurrences:{project:string;tag:string;source:string;line:number}[]}>();
   for(const p of projects)for(const r of p.references.filter(r=>!r.exists||r.external)){
-    const absolute=path.resolve(root,path.dirname(p.file),r.file),key=process.platform==='win32'?absolute.toLowerCase():absolute;
+    const absolute=path.resolve(root,path.dirname(r.source),r.file),key=keyFor(absolute);
     const warning=grouped.get(key)??{file:r.file,missing:!r.exists&&!r.candidate,external:r.external,candidate:r.candidate,occurrences:[]};
-    warning.occurrences.push({project:p.file,tag:r.tag});grouped.set(key,warning);
+    warning.occurrences.push({project:p.file,tag:r.tag,source:r.source,line:r.line});grouped.set(key,warning);
   }
   const dependencyWarnings=[...grouped.values()];
   return {projectDir:root,filesCount:files.length,alignmentsCount:ext('.ali').length,profilesCount:ext('.ras').length,
-    temporaryPolCount: allPols.filter(temporary).length, polCount: pols.length,
+    temporaryPolCount: allPols.filter(isTemporaryProjectFile).length, polCount: pols.length,
     hasIfc:ext('.ifc').length>0,projects,nativeFiles:{cej:ext('.cej'),vol:ext('.vol'),per:ext('.per')},
     dependencyWarnings,warnings:dependencyWarnings.map(r=>(r.external?'External reference: ':r.candidate?'Unverified project-root match: ':'Missing reference: ')+r.file+' ('+r.occurrences.length+' occurrences)')};
 }
@@ -60,8 +99,16 @@ export function inspectProjectSummary(projectPath: string, options: InspectionOp
     total: result.polCount, offset, limit, nextOffset: offset + limit < result.polCount ? offset + limit : null,
     projects: result.projects.map(project => ({
       file: project.file, title: project.title.slice(0, 256),
-      temporary: ['tmp', 'res'].includes(project.file.split(path.sep)[0]!.toLowerCase()),
-      axisRecordCount: project.axes.length, referenceCount: project.references.length, sha256: project.sha256
+      temporary: isTemporaryProjectFile(project.file),
+      axisRecordCount: project.axes.length, referenceCount: project.references.length, sha256: project.sha256,
+      modelLoadEvidence: {
+        alzadoAxisCount: project.modelLoadEvidence.alzadoAxisIds.length,
+        persistedBimAxisCount: new Set(project.modelLoadEvidence.persistedBim.filter(item => item.bytes > 0).map(item => item.axisId)).size,
+        alzadoAxisIdsWithoutNonemptyBim: project.modelLoadEvidence.alzadoAxisIdsWithoutNonemptyBim,
+        terrainCandidateCount: project.modelLoadEvidence.terrainCandidates.length,
+        unreadableVolumeFileCount: project.modelLoadEvidence.unreadableVolumeFiles.length,
+        liveTreeVerified: project.modelLoadEvidence.liveTreeVerified
+      }
     })),
     dependencyWarningCount: result.dependencyWarnings.length,
     dependencyWarnings: result.dependencyWarnings.slice(0, 10).map(({occurrences, ...warning}) => ({

@@ -32,7 +32,7 @@ const dgcLocationOptions = z.object({
 });
 export function createServer(){
   const server=new McpServer({name:'istram-mcp',version:'0.3.0-rc.1'}, {
-    instructions: 'Start with project_inspect summary=true and the known POL. For RCEclass, check the FCV with rceclass_profile_inspect before export and the IFC with ifc_rceclass_audit afterwards. Use ifc_validate for geometry, schema and the project-specific DGC location checks. Command catalog entries are documentation. Use verified recipes for automated native actions.'
+    instructions: 'Start with project_inspect summary=true and the known POL. Before a whole-project BIM export, compare the axis and terrain inventory with the live BIM tree. Verify geometry for the intended road groups, railings and terrain in Virtual 3D. For RCEclass, check the FCV with rceclass_profile_inspect before export and the IFC with ifc_rceclass_audit afterwards. Use ifc_validate for geometry, schema and the project-specific DGC location checks. Command catalog entries are documentation. Use verified recipes for automated native actions.'
   });
   const workspace=process.env.ISTRAM_WORKSPACE ?? fileURLToPath(new URL('../.local/projects',import.meta.url));
   const projects=new ProjectStore(workspace,async(changes,root)=>{await worker('idle',{changes,projectPath:root});});
@@ -71,7 +71,7 @@ export function createServer(){
     if(a.query)commands=commands.filter(c=>JSON.stringify(c).toLowerCase().includes(a.query!.toLowerCase()));
     return {total:commands.length,commands:commands.slice(a.offset,a.offset+a.limit)};
   });
-  register('project_inspect','Use summary=true for project candidates and counts. Pass projectFile relative to projectPath to inspect a single POL. Root-only matches are candidates until confirmed in ISTRAM.',z.object({
+  register('project_inspect','Inventory POL and CEJ axes, saved B1M geometry, terrain candidates and auxiliary LON references. Use summary=true for counts or a relative projectFile for detail. Disk evidence requires confirmation in the live BIM tree.',z.object({
     projectPath:textPath, projectFile:textPath.optional(), summary:z.boolean().default(false),
     includeTemporary:z.boolean().optional(), offset:z.number().int().min(0).default(0), limit:z.number().int().min(1).max(100).default(10)
   }),true,a=>a.summary ? inspectProjectSummary(a.projectPath,a) : inspectProjectDirectory(a.projectPath,a));

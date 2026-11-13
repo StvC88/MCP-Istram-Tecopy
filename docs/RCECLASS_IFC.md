@@ -5,8 +5,10 @@ IFC4.3 ADD2 y comprueba los códigos contra el catálogo aprobado para el proyec
 
 ## En ISTRAM
 
-1. Identificar el POL y el alcance del árbol BIM. Revisar ejes y tramos
-   presentes antes de exportar.
+1. Identificar el POL en su carpeta de trabajo e inspeccionar sus referencias
+   CEJ, VOL, LON, EDM y DAR. Comparar los ejes de proyecto con las ramas que
+   aparecen bajo **Obra**. Excluir de la exportación los IFC de prueba
+   importados en la misma sesión.
 2. En **BIM → Clases/Atributos**, cargar `RCEclass_ClasesIstram.fcv`. El perfil
    referencia los siete archivos FCT. Revisar las clases sin traducción en
    **Clasificación** y aplicar las clasificaciones al alcance elegido.
@@ -27,12 +29,38 @@ Las tablas y plantillas se obtienen del protocolo del proyecto. La
 [Orden Circular 5/2024](https://www.transportes.gob.es/carreteras/rceclass)
 publica el sistema RCEclass.
 
+## Carga del modelo antes de exportar
+
+- En el menú contextual de **Obra**, usar **Cargar geometría y propiedades
+  del proyecto en archivos .b1m** para intentar recuperar la geometría
+  existente. Confirmar las ramas resultantes. Si el árbol sigue parcial,
+  reabrir el POL desde su carpeta de trabajo, seleccionar **Obra** y ejecutar
+  **BIM → Generación → Generar Proyecto**. Revisar cada aviso por eje. La
+  ayuda de ISTRAM indica que el recálculo del eje puede invalidar su B1M.
+- Revisar **Control de generación** para confirmar que se incluyan los
+  objetos de la tabla DAR, los objetos lineales y las estructuras cuando
+  procedan. Confirmar barandas y defensas como objetos con geometría en
+  Virtual 3D y revisar sus clases, incluidos nombres de origen como
+  barandilla, bionda y pretil. La presencia de una clase en el FCV por sí
+  sola indica que existe un mapeo para esa clase.
+- Cargar la cartografía EDM y su definición SUP desde **Control → Control
+  de superficies cartográficas**. Comprobar el terreno en Virtual 3D y
+  revisar la geometría de la superficie en el IFC. El SUP define qué datos
+  intervienen en la superficie. Para intercambiar una malla, usar la
+  triangulación existente del proyecto o generarla desde una fuente
+  topográfica verificada, con su extensión y sus cotas contrastadas.
+- Referencias de la ayuda instalada: `OL_BIM.html`, `OL_BIM_opciones.html`,
+  `EDM_control_entidades.html` y `EDM_topografia.html`.
+
 ## En el MCP
 
 - `project_inspect` con `summary: true` devuelve un inventario paginado.
   `projectFile` restringe el análisis a un POL relativo a la carpeta del
-  proyecto. Un archivo encontrado en la raíz se muestra como candidato
-  pendiente de confirmar en ISTRAM.
+  proyecto. `modelLoadEvidence` informa de ejes con registros de alzado, B1M
+  no vacíos, candidatos de terreno y VOL no legibles. Las advertencias
+  detalladas señalan el archivo y la línea de cada referencia. Los archivos
+  localizados en otra carpeta del proyecto figuran como candidatos pendientes
+  de confirmar en la sesión nativa.
 - `ifc_rceclass_audit` compara los códigos de `RCE_CLA` con las asociaciones
   IFC y con los siete FCT del directorio indicado. También comprueba que
   exista una descripción para cada tabla usada. La cobertura y las muestras

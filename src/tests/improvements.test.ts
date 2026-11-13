@@ -7,7 +7,7 @@ import {randomUUID} from 'node:crypto';
 import {designPreview,prepareDesignPackage} from '../designs.js';
 import {DomainError,hash} from '../io.js';
 import {Jobs} from '../jobs.js';
-import {ProjectStore,inspectProjectDirectory} from '../projects.js';
+import {ProjectStore,inspectProjectDirectory,inspectProjectSummary} from '../projects.js';
 import {readUsageCatalogue,workflowPlan} from '../capabilities.js';
 import {validateScenario,checkAssertions} from '../acceptance.js';
 function base(t:TestContext){const p=fs.mkdtempSync(path.join(os.tmpdir(),'istram-improved-'));t.after(()=>fs.rmSync(p,{recursive:true,force:true}));return p;}
@@ -81,6 +81,34 @@ test('dependency warnings group occurrences and preserve their project/tag conte
   for(const name of ['a.pol','b.pol'])fs.writeFileSync(path.join(root,name),'VOL 1 missing.vol\nVOLV 1 missing.vol\n');
   const p=inspectProjectDirectory(root);assert.equal(p.warnings.length,1);assert.equal(p.dependencyWarnings[0]!.occurrences.length,4);
   assert.deepEqual(new Set(p.dependencyWarnings[0]!.occurrences.map(o=>o.project)),new Set(['a.pol','b.pol']));
+});
+
+test('BIM inventory distinguishes saved axes, cartography, temporary POLs and missing longitudinal profiles',t=>{
+  const root=base(t);
+  for(const dir of ['project_pol','lib','tmp']) fs.mkdirSync(path.join(root,dir));
+  const fixture: Record<string,string> = {
+    'project_pol/model.pol': 'CEJ 8 model.cej\nALZ 1 1 85\nALZ 0 2 42\nVOL 2 model-2.vol\nVOLV 2 1 model-2.vol\nEDM Cartografia del enlace.edm\nDAR 1 model.dar\n',
+    'project_pol/model.cej': 'EJE 1 1000 4 Tronco\nEJE 2 0 2 Ramal\nEJE 3 0 0\n',
+    'project_pol/model-2.vol': 'L 2 1 missing.lon 1 2 0\n',
+    'Cartografia del enlace.edm': 'EDM', 'Terrain.sup': 'SUP', 'lib/model.dar': 'DAR',
+    'ISPOL1.b1m': 'geometry', 'ISPOL2.b1m': '', 'ISPOL3.b1m': 'geometry',
+    'tmp/ISPOL2.b1m': 'temporary geometry', 'tmp/ini.pol': ''
+  };
+  for(const [file,content] of Object.entries(fixture)) fs.writeFileSync(path.join(root,file),content);
+  const info=inspectProjectSummary(root,{});
+  assert.equal(info.total,1);
+  assert.equal(info.temporaryPolCount,1);
+  assert.deepEqual(info.projects[0]!.modelLoadEvidence,{
+    alzadoAxisCount:2,persistedBimAxisCount:2,alzadoAxisIdsWithoutNonemptyBim:[2],
+    terrainCandidateCount:2,unreadableVolumeFileCount:0,liveTreeVerified:false
+  });
+  const detail=inspectProjectDirectory(root,{projectFile:'project_pol/model.pol'});
+  const missing=detail.dependencyWarnings.find(w=>w.file==='missing.lon')!;
+  assert.equal(missing.missing,true);
+  assert.deepEqual(missing.occurrences,[{project:path.join('project_pol','model.pol'),tag:'LON',
+    source:path.join('project_pol','model-2.vol'),line:1}]);
+  assert.equal(detail.dependencyWarnings.find(w=>w.file==='Cartografia del enlace.edm')!.candidate,'Cartografia del enlace.edm');
+  assert.equal(detail.dependencyWarnings.find(w=>w.file==='model.dar')!.candidate,path.join('lib','model.dar'));
 });
 test('jobs preserve domain errors, accept legacy journals and reject unknown IDs with a stable code',async t=>{
   const dir=base(t),jobs=new Jobs(dir);
