@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { detectIstramEnvironment, readIfcMappings } from './config.js';
 import { parseAliFile, parseRasFile, parseComandosCfg, parseNativeContent } from './parsers.js';
 import { DomainError, readDocument, safeChild } from './io.js';
-import { inspectProjectDirectory, ProjectStore } from './projects.js';
+import { inspectProjectDirectory, inspectProjectSummary, ProjectStore } from './projects.js';
 import { Jobs } from './jobs.js';
 import { worker } from './bridge.js';
 import { readUsageCatalogue, usageCapabilities, workflowPlan } from './capabilities.js';
@@ -14,8 +14,16 @@ import {alignmentSchema,drainageSchema,sectionSchema,designSchema,designPreview,
 
 const textPath=z.string().min(1).max(4096);
 const requestId=z.string().min(1).max(128);
+const rceTables = ['01','02','03','04','05','06','07'] as const;
+const rceAuditOptions = z.object({
+  catalogDirectory: textPath,
+  requiredTables: z.array(z.enum(rceTables)).min(1).max(7).default(['01','02','05']),
+  sampleLimit: z.number().int().min(0).max(100).default(20)
+});
 export function createServer(){
-  const server=new McpServer({name:'istram-mcp',version:'0.3.0-rc.1'});
+  const server=new McpServer({name:'istram-mcp',version:'0.3.0-rc.1'}, {
+    instructions: 'Use project_inspect with summary=true and a specific POL when known. Use ifc_rceclass_audit on the native IFC with the approved FCT catalog, and ifc_validate for schema and geometry. Command catalog entries are documentation. Start native actions only through verified recipes on managed copies.'
+  });
   const workspace=process.env.ISTRAM_WORKSPACE ?? fileURLToPath(new URL('../.local/projects',import.meta.url));
   const projects=new ProjectStore(workspace,async(changes,root)=>{await worker('idle',{changes,projectPath:root});});
   const jobs=new Jobs(path.join(workspace,'..','jobs'));
@@ -53,7 +61,12 @@ export function createServer(){
     if(a.query)commands=commands.filter(c=>JSON.stringify(c).toLowerCase().includes(a.query!.toLowerCase()));
     return {total:commands.length,commands:commands.slice(a.offset,a.offset+a.limit)};
   });
-  register('project_inspect','Inspect .pol references and .cej axis records; report missing or external dependencies.',z.object({projectPath:textPath}),true,a=>inspectProjectDirectory(a.projectPath));
+  register('project_inspect','Use summary=true for project candidates and counts. Pass projectFile relative to projectPath to inspect a single POL. Root-only matches are candidates until confirmed in ISTRAM.',z.object({
+    projectPath:textPath, projectFile:textPath.optional(), summary:z.boolean().default(false),
+    includeTemporary:z.boolean().optional(), offset:z.number().int().min(0).default(0), limit:z.number().int().min(1).max(100).default(10)
+  }),true,a=>a.summary ? inspectProjectSummary(a.projectPath,a) : inspectProjectDirectory(a.projectPath,a));
+  register('ifc_rceclass_audit','Check RCE_CLA codes and descriptions, IFC classification associations and membership in the seven approved FCT tables. Reports coverage and bounded samples; use ifc_validate for schema and geometry.',
+    rceAuditOptions.extend({filePath:textPath}),true,a=>worker('ifc_rceclass_audit',a,30*60*1000));
   register('alignment_read','Read .ALI numeric rows, preserving unknown records; geometry interpretation is not certified for writes.',z.object({filePath:textPath}),true,a=>parseAliFile(a.filePath));
   register('profile_read','Read .ras numeric profile rows with strict number validation.',z.object({filePath:textPath}),true,a=>parseRasFile(a.filePath));
   register('ifc_entity_types','Read all available IFC mapping rows and entity names; does not imply licensed export.',z.object({}),true,()=>readIfcMappings(detectIstramEnvironment().basePath));
@@ -68,15 +81,39 @@ export function createServer(){
   register('worker_health','Check Python and optional Windows/IFC dependencies.',z.object({}),true,()=>worker('health'));
   register('session_snapshot','Inspect live ISTRAM windows and control identifiers without changing the model.',z.object({}),true,()=>worker('snapshot'));
   register('operation_start','Start a verified Windows recipe on a managed copy. Unknown versions or unverified recipes are refused.',z.object({
-    projectId:z.string().uuid(),requestId,action:z.enum(['open_project','close_project','save','recalculate','bim_configure','bim_generate','bim_export']),projectFile:z.string().optional(),outputFile:z.string().optional()
+    projectId:z.string().uuid(),requestId,action:z.enum(['open_project','close_project','save','recalculate','bim_configure','bim_generate','bim_export']),projectFile:z.string().optional(),outputFile:z.string().optional(),
+    rceclassAudit:rceAuditOptions.optional()
   }),false,a=>{
     const root=projects.path(a.projectId);
     const params:Record<string,unknown>={action:a.action,projectPath:root};
     if(a.projectFile)params.projectFile=safeChild(root,a.projectFile);
     if(a.outputFile)params.outputPath=safeChild(root,a.outputFile);
+    if (a.rceclassAudit && (a.action !== 'bim_export' || !a.outputFile || !/\.ifc$/i.test(a.outputFile))) {
+      throw new DomainError('INVALID_RCECLASS_EXPORT', 'RCEclass audit requires bim_export with an IFC outputFile');
+    }
     return jobs.start(a.requestId,a,'istram-session',async()=>{
       if(!projects.verifySource(a.projectId))throw new DomainError('SOURCE_CHANGED','Original copied files differ from their inventory; inspect before native execution');
-      try{return await worker('action',params,30*60*1000);}
+      try{
+        if (a.rceclassAudit) {
+          await worker('rceclass_catalog_check', {catalogDirectory:a.rceclassAudit.catalogDirectory});
+        }
+        const result = await worker('action',params,30*60*1000);
+        if (!a.rceclassAudit) return result;
+        try {
+          const filePath = safeChild(root,a.outputFile!);
+          const artifacts = result.artifacts as Record<string,string>;
+          const expected = Object.entries(artifacts).find(([relative]) => safeChild(root,relative) === filePath)?.[1];
+          if (!expected) throw new DomainError('OUTPUT_NOT_VERIFIED', 'The recipe did not verify the requested IFC as an artifact');
+          const audit = await worker('ifc_rceclass_audit',{...a.rceclassAudit,filePath},30*60*1000);
+          if (audit.sha256 !== expected) throw new DomainError('OUTPUT_CHANGED', 'The IFC changed after export');
+          return {...result, rceclassAudit:{status:'completed', ...audit}};
+        } catch (error) {
+          // The native export already ran; report the audit failure without retrying the export.
+          return {...result, rceclassAudit:{status:'failed',
+            code:error instanceof DomainError ? error.code : 'RCECLASS_AUDIT_FAILED',
+            message:error instanceof Error ? error.message : String(error)}};
+        }
+      }
       finally{if(!projects.verifySource(a.projectId))throw new DomainError('OUTCOME_UNCERTAIN','Original copied files changed during the native operation; inspect before recovery');}
     });
   });

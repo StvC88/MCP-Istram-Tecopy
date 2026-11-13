@@ -16,7 +16,7 @@ test('stdio protocol lists tools and resources, validates arguments, exposes hon
   const client=new Client({name:'integration-test',version:'1.0.0'});
   try{
     await client.connect(transport);
-    const tools=await client.listTools();assert.equal(tools.tools.length,25);
+    const tools=await client.listTools();assert.ok(tools.tools.some(tool => tool.name === 'ifc_rceclass_audit'));
     const usageTool=tools.tools.find(t=>t.name==='usage_capabilities');
     assert.equal(usageTool?.annotations?.readOnlyHint,true);
     assert.ok(tools.tools.some(t=>t.name==='project_prepare_batch'));

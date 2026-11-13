@@ -343,6 +343,23 @@ def dispatch(method, params):
         return {"idle":True}
     if method=="action":return action(params)
     if method=="ifc_validate":return validate_ifc(params)
+    if method=="rceclass_catalog_check":
+        from rceclass import read_catalog
+        try:
+            _, tables = read_catalog(params["catalogDirectory"])
+        except (OSError, ValueError) as error:
+            fail("RCECLASS_CATALOG_INVALID", str(error))
+        return {"tables": tables}
+    if method=="ifc_rceclass_audit":
+        import ifcopenshell
+        from rceclass import audit
+        file = params["filePath"]
+        model = ifcopenshell.open(file)
+        try:
+            result = audit(model, params["catalogDirectory"], params["requiredTables"], params["sampleLimit"])
+        except (OSError, ValueError) as error:
+            fail("RCECLASS_CATALOG_INVALID", str(error))
+        return {"schema": model.schema_identifier, "sha256": digest(file), **result}
     fail("UNKNOWN_METHOD","Unsupported worker method")
 
 def main():

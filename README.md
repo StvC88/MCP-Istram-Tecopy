@@ -2,7 +2,7 @@
 
 Conecta un cliente de IA con ISTRAM/ISPOL mediante [Model Context Protocol](https://modelcontextprotocol.io/). El cliente solicita herramientas; el servidor consulta datos del proyecto y coordina las operaciones de ISTRAM.
 
-**Estado: versión candidata 0.3.0-rc.1 para revisión técnica.** Incluye 25 herramientas MCP y preparación de geometría para ejes, tuberías y contornos de cunetas, cajones, muros, túneles y detalles. La importación, cálculo y persistencia nativos siguen pendientes de un adaptador certificado.
+**Estado: versión candidata 0.3.0-rc.1 para revisión técnica.** Incluye 26 herramientas MCP y preparación de geometría para ejes, tuberías y contornos de cunetas, cajones, muros, túneles y detalles. La importación, cálculo y persistencia nativos siguen pendientes de un adaptador certificado.
 
 ## Revisar el proyecto
 
@@ -55,6 +55,9 @@ Configurar el cliente con [examples/mcp.json](examples/mcp.json). Solo requiere 
 [Instalación en Codex para Windows](docs/CODEX_INSTALL.md): entorno Python aislado, registro stdio y comprobaciones.
 
 ## Prueba en ISTRAM
+
+Para exportar IFC4.3 ADD2 con RCEclass y comprobar cobertura de códigos y
+asociaciones, véase la [guía IFC con RCEclass](docs/RCECLASS_IFC.md).
 
 La primera prueba sobre una sesión abierta será de consulta. Antes de guardar, recalcular o exportar se contrastarán manuales, curso y selectores reales. El flujo de modificación y BIM se probará en una copia identificada del proyecto. [Primera prueba de sesión](docs/SESSION_TEST.md) y [aceptación](docs/ACCEPTANCE.md).
 

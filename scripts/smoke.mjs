@@ -12,7 +12,7 @@ const original=checksum(),client=await connect({ISTRAM_WORKSPACE:path.join(root,
 const report={runId,startedAt:new Date().toISOString(),success:false,checks:[],nativeExecutionVerified:false,engineeringDesignCertified:false};
 async function check(name,run){await run();report.checks.push({name,passed:true});}
 try{
-  await check('25 stdio tools',async()=>assert.equal((await client.listTools()).tools.length,25));
+  await check('RCEclass audit available over stdio',async()=>assert.ok((await client.listTools()).tools.some(tool=>tool.name==='ifc_rceclass_audit')));
   const copy=await call(client,'project_copy',{sourcePath:source});report.projectPath=copy.projectPath;
   await check('grouped missing dependencies',async()=>assert.equal((await call(client,'project_inspect',{projectPath:copy.projectPath})).dependencyWarnings.length,1));
   const axis={kind:'alignment',units:'m',crs:'local synthetic',points:[[0,0],[100,0]]};

@@ -8,9 +8,9 @@ export async function connect(env={}){
   const transport=new StdioClientTransport({command:process.execPath,args:[path.join(repo,'dist/index.js')],env:{...process.env,...env}});
   await client.connect(transport);return client;
 }
-export async function call(client,name,args={}){
-  const result=await client.callTool({name,arguments:args});
-  const payload=JSON.parse(result.content.find(c=>c.type==='text').text);
+export async function call(client,name,args={},options){
+  const result=await client.callTool({name,arguments:args},options);
+  const payload=result.structuredContent ?? JSON.parse(result.content.find(c=>c.type==='text').text);
   if(result.isError||!payload.ok){const error=new Error(payload.error?.message??'MCP call failed');error.code=payload.error?.code;throw error;}
   return payload.data;
 }

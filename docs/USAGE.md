@@ -4,7 +4,7 @@
 
 Revisión funcional: `usage_capabilities` permite buscar con `query`, seleccionar `capabilityId` y paginar con `offset`/`limit`. Devuelve requisitos, cobertura, evidencia y aceptación. Los nombres en `proposedTools` son propuestas y no se pueden ejecutar. Catálogo completo: `istram://usage/capabilities`. [Revisión](USAGE_REVIEW.md).
 
-En 0.3 se descubren 25 herramientas. `usage_workflow_plan` devuelve las herramientas disponibles y pendientes de aceptación para una de las 24 áreas. `alignment_design_preview`, `drainage_design_preview` y `section_design_preview` validan geometría declarada; `design_package_prepare` guarda DXF y JSON solo dentro de `.istram-mcp/deliverables` de la copia. [Ejemplos y límites](IMPLEMENTATION_0_3.md).
+En 0.3, `usage_workflow_plan` devuelve las herramientas disponibles y pendientes de aceptación para una de las 24 áreas. `alignment_design_preview`, `drainage_design_preview` y `section_design_preview` validan geometría declarada. `design_package_prepare` guarda DXF y JSON dentro de `.istram-mcp/deliverables` de la copia. [Ejemplos y límites](IMPLEMENTATION_0_3.md).
 
 Consulta: istram_detect, istram_command_catalog, project_inspect, alignment_read, profile_read, native_records_read, ifc_entity_types.
 

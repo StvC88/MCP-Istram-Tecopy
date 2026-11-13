@@ -20,6 +20,30 @@ export function parseAliContent(content: string) {
   return {header:{originStationPk,comments},elements,unknown,units:'unspecified',writeValidated:false};
 }
 export function parseRasContent(content:string){
+  if (/^#\s*Formato\s*:\s*Istram\b/im.test(content) &&
+      /^#.*\bPk\s+Cota\s*\|.*Pendiente/im.test(content)) {
+    const versionHeader = content.split(/\r?\n/).find(line => /^#\s*Formato\s*:/i.test(line))!.trim();
+    const points: Record<string, unknown>[] = [];
+    const unknown: {line: number; raw: string}[] = [];
+    content.split(/\r?\n/).forEach((raw, index) => {
+      const value = raw.trim();
+      if (!value || value.startsWith('#')) return;
+      const line = index + 1;
+      const columns = value.split(/\s+/);
+      if (columns.length !== 8) {
+        unknown.push({line, raw});
+        return;
+      }
+      const [pk, elevation, entryPk, entryElevation, exitPk, exitElevation, slopePercent, verticalCurveParameter] =
+        columns.map(column => numberToken(column, line));
+      points.push({line, pk, elevation, entryPk, entryElevation, exitPk, exitElevation, slopePercent, verticalCurveParameter, rawLine: raw});
+    });
+    if (!points.length) throw new DomainError('INVALID_RAS', 'ISTRAM report has no eight-column vertical alignment rows');
+    return {versionHeader, variant: 'istram_vertical_report', sections: [{name: 'MAIN_PROFILE', points}], unknown, writeValidated: false};
+  }
+  if (/^#\s*RASANTES\s*$/im.test(content) && !/^VER\s/m.test(content)) {
+    throw new DomainError('RAS_VARIANT_UNVERIFIED', 'Found the native # RASANTES variant. Its record semantics have not been verified.');
+  }
   let versionHeader='',section='MAIN_PROFILE';
   const sections:{name:string;points:Record<string,unknown>[]}[]=[{name:section,points:[]}];
   const unknown:{line:number;raw:string}[]=[];

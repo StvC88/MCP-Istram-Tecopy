@@ -4,17 +4,33 @@ import { randomUUID } from 'node:crypto';
 import { atomicJson, DomainError, encodeDocument, hash, readDocument, safeChild, walk, within } from './io.js';
 import { parseNativeContent } from './parsers.js';
 
-export function inspectProjectDirectory(projectPath:string) {
+type InspectionOptions = {projectFile?: string; summary?: boolean; includeTemporary?: boolean; offset?: number; limit?: number};
+
+export function inspectProjectDirectory(projectPath:string, options: InspectionOptions = {}) {
   const root=fs.realpathSync(projectPath), files=walk(root);
   const ext=(suffix:string)=>files.filter(f=>f.toLowerCase().endsWith(suffix));
-  const projects=ext('.pol').map(file=>{
+  const temporary = (file: string) => ['tmp', 'res'].includes(file.split(path.sep)[0]!.toLowerCase());
+  const selected = options.projectFile === undefined ? undefined : path.relative(root, safeChild(root, options.projectFile));
+  const keyFor = (file: string) => process.platform === 'win32' ? file.toLowerCase() : file;
+  const knownFiles = new Set(files.map(keyFor));
+  const allPols = ext('.pol');
+  const pols = allPols.filter(file => selected !== undefined ? keyFor(file) === keyFor(selected) :
+    (options.includeTemporary ?? !options.summary) || !temporary(file));
+  if (selected !== undefined && !pols.length) throw new DomainError('POL_NOT_FOUND', 'Select an existing .pol under projectPath');
+  const offset = options.offset ?? 0, limit = options.limit ?? 10;
+  const projects=(options.summary ? pols.slice(offset, offset + limit) : pols).map(file=>{
     const doc=readDocument(path.join(root,file)),records=parseNativeContent(doc.text);
     const refs=records.flatMap(record=>{
       if(!['CEJ','VOL','VOLV','PER','PERV','DT','TOP','EDM'].includes(record.tag))return[];
       const names=record.values.filter(v=>/\.(cej|vol|per|edm|top|ttp|toc|dtv|dof)$/i.test(v));
       return names.map(name=>{
         const absolute=path.resolve(path.dirname(path.join(root,file)),name);
-        return {tag:record.tag,file:name,exists:fs.existsSync(absolute),external:!within(root,absolute)};
+        const external = !within(root,absolute);
+        const exists = external ? fs.existsSync(absolute) : knownFiles.has(keyFor(path.relative(root,absolute)));
+        const rootMatch = path.resolve(root,name);
+        const candidate = !exists && !external && within(root,rootMatch) && knownFiles.has(keyFor(path.relative(root,rootMatch)))
+          ? path.relative(root,rootMatch) : undefined;
+        return {tag:record.tag,file:name,exists,external,candidate};
       });
     });
     const axisFiles=refs.filter(r=>r.tag==='CEJ'&&r.exists&&!r.external).map(r=>path.resolve(path.dirname(path.join(root,file)),r.file));
@@ -22,16 +38,36 @@ export function inspectProjectDirectory(projectPath:string) {
       id:r.values[0],initialStation:r.values[1],title:r.values.slice(3).join(' '),source:path.relative(root,f)})));
     return {file,title:records.find(r=>r.tag==='TP')?.values.join(' ')??'',references:refs,axes,sha256:doc.sha256};
   });
-  const grouped=new Map<string,{file:string;missing:boolean;external:boolean;occurrences:{project:string;tag:string}[]}>();
+  const grouped=new Map<string,{file:string;missing:boolean;external:boolean;candidate?:string;occurrences:{project:string;tag:string}[]}>();
   for(const p of projects)for(const r of p.references.filter(r=>!r.exists||r.external)){
     const absolute=path.resolve(root,path.dirname(p.file),r.file),key=process.platform==='win32'?absolute.toLowerCase():absolute;
-    const warning=grouped.get(key)??{file:r.file,missing:!r.exists,external:r.external,occurrences:[]};
+    const warning=grouped.get(key)??{file:r.file,missing:!r.exists&&!r.candidate,external:r.external,candidate:r.candidate,occurrences:[]};
     warning.occurrences.push({project:p.file,tag:r.tag});grouped.set(key,warning);
   }
   const dependencyWarnings=[...grouped.values()];
   return {projectDir:root,filesCount:files.length,alignmentsCount:ext('.ali').length,profilesCount:ext('.ras').length,
+    temporaryPolCount: allPols.filter(temporary).length, polCount: pols.length,
     hasIfc:ext('.ifc').length>0,projects,nativeFiles:{cej:ext('.cej'),vol:ext('.vol'),per:ext('.per')},
-    dependencyWarnings,warnings:dependencyWarnings.map(r=>(r.missing?'Missing reference: ':'External reference: ')+r.file+' ('+r.occurrences.length+' occurrences)')};
+    dependencyWarnings,warnings:dependencyWarnings.map(r=>(r.external?'External reference: ':r.candidate?'Unverified project-root match: ':'Missing reference: ')+r.file+' ('+r.occurrences.length+' occurrences)')};
+}
+
+export function inspectProjectSummary(projectPath: string, options: InspectionOptions) {
+  const result = inspectProjectDirectory(projectPath, {...options, summary: true});
+  const offset = options.offset ?? 0, limit = options.limit ?? 10;
+  return {
+    projectDir: result.projectDir, filesCount: result.filesCount, aliFileCount: result.alignmentsCount,
+    rasFileCount: result.profilesCount, hasIfc: result.hasIfc, temporaryPolCount: result.temporaryPolCount,
+    total: result.polCount, offset, limit, nextOffset: offset + limit < result.polCount ? offset + limit : null,
+    projects: result.projects.map(project => ({
+      file: project.file, title: project.title.slice(0, 256),
+      temporary: ['tmp', 'res'].includes(project.file.split(path.sep)[0]!.toLowerCase()),
+      axisRecordCount: project.axes.length, referenceCount: project.references.length, sha256: project.sha256
+    })),
+    dependencyWarningCount: result.dependencyWarnings.length,
+    dependencyWarnings: result.dependencyWarnings.slice(0, 10).map(({occurrences, ...warning}) => ({
+      ...warning, occurrenceCount: occurrences.length
+    }))
+  };
 }
 export type Change={file:string;line:number;expected:string;replacement:string};
 export type BatchElement={elementId:string;changes:Change[]};
