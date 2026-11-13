@@ -2,7 +2,7 @@
 
 Conecta un cliente de IA con ISTRAM/ISPOL mediante [Model Context Protocol](https://modelcontextprotocol.io/). El cliente solicita herramientas; el servidor consulta datos del proyecto y coordina las operaciones de ISTRAM.
 
-**Estado: versión candidata 0.3.0-rc.1 para revisión técnica.** Incluye 26 herramientas MCP y preparación de geometría para ejes, tuberías y contornos de cunetas, cajones, muros, túneles y detalles. La importación, cálculo y persistencia nativos siguen pendientes de un adaptador certificado.
+**Estado: versión candidata 0.3.0-rc.1 para revisión técnica.** Incluye 28 herramientas MCP y preparación de geometría para ejes, tuberías y contornos de cunetas, cajones, muros, túneles y detalles. La importación, cálculo y persistencia nativos siguen pendientes de un adaptador certificado.
 
 ## Revisar el proyecto
 

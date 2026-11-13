@@ -20,9 +20,19 @@ const rceAuditOptions = z.object({
   requiredTables: z.array(z.enum(rceTables)).min(1).max(7).default(['01','02','05']),
   sampleLimit: z.number().int().min(0).max(100).default(20)
 });
+const dgcLocationOptions = z.object({
+  expectedProjectedCrs: z.string().regex(/^EPSG:\d+$/),
+  expectedVerticalDatum: z.string().min(1).max(200).optional(),
+  surveyControl: z.object({
+    guid: z.string().length(22), easting: z.number().finite(), northing: z.number().finite(),
+    elevation: z.number().finite(), toleranceMetres: z.number().finite().positive()
+  }).optional(),
+  requiredMarkerPks: z.array(z.number().finite()).max(1000).default([]),
+  sampleLimit: z.number().int().min(0).max(100).default(20)
+});
 export function createServer(){
   const server=new McpServer({name:'istram-mcp',version:'0.3.0-rc.1'}, {
-    instructions: 'Use project_inspect with summary=true and a specific POL when known. Use ifc_rceclass_audit on the native IFC with the approved FCT catalog, and ifc_validate for schema and geometry. Command catalog entries are documentation. Start native actions only through verified recipes on managed copies.'
+    instructions: 'Start with project_inspect summary=true and the known POL. For RCEclass, check the FCV with rceclass_profile_inspect before export and the IFC with ifc_rceclass_audit afterwards. Use ifc_validate for geometry, schema and the project-specific DGC location checks. Command catalog entries are documentation. Use verified recipes for automated native actions.'
   });
   const workspace=process.env.ISTRAM_WORKSPACE ?? fileURLToPath(new URL('../.local/projects',import.meta.url));
   const projects=new ProjectStore(workspace,async(changes,root)=>{await worker('idle',{changes,projectPath:root});});
@@ -67,6 +77,20 @@ export function createServer(){
   }),true,a=>a.summary ? inspectProjectSummary(a.projectPath,a) : inspectProjectDirectory(a.projectPath,a));
   register('ifc_rceclass_audit','Check RCE_CLA codes and descriptions, IFC classification associations and membership in the seven approved FCT tables. Reports coverage and bounded samples; use ifc_validate for schema and geometry.',
     rceAuditOptions.extend({filePath:textPath}),true,a=>worker('ifc_rceclass_audit',a,30*60*1000));
+  register('rceclass_profile_inspect','Preflight an ISTRAM RCEclass FCV profile against the approved FCT tables before export. Pass exact ISTRAM class names to focus on the current model.',
+    rceAuditOptions.extend({profilePath:textPath, classes:z.array(z.string().min(1).max(256)).max(1000).default([])}),
+    true,a=>worker('rceclass_profile_inspect',a));
+  register('ifc_istram_alignment_prepare','Build a derivative IFC with DGC_LOC chainages and raised station markers from matching, verified straight-segment ALI and RAS reports. Use only for an empty ISTRAM alignment. Verify schema, geometry and survey control after processing.',z.object({
+    filePath:textPath,outputPath:textPath,aliPath:textPath,rasPath:textPath,
+    roadId:z.string().min(1).max(100),intervalMetres:z.number().finite().min(1).default(1000),
+    markerHeightMetres:z.number().finite().positive().max(5).default(1)
+  }),false,a=>{
+    if (!/\.ifc$/i.test(a.outputPath) || !/\.ifc$/i.test(a.filePath) ||
+        !/\.ali$/i.test(a.aliPath) || !/\.ras$/i.test(a.rasPath)) {
+      throw new DomainError('INVALID_ALIGNMENT_FILES','Expected IFC, ALI and RAS file extensions');
+    }
+    return worker('ifc_istram_alignment_prepare',a,5*60*1000);
+  });
   register('alignment_read','Read .ALI numeric rows, preserving unknown records; geometry interpretation is not certified for writes.',z.object({filePath:textPath}),true,a=>parseAliFile(a.filePath));
   register('profile_read','Read .ras numeric profile rows with strict number validation.',z.object({filePath:textPath}),true,a=>parseRasFile(a.filePath));
   register('ifc_entity_types','Read all available IFC mapping rows and entity names; does not imply licensed export.',z.object({}),true,()=>readIfcMappings(detectIstramEnvironment().basePath));
@@ -120,8 +144,9 @@ export function createServer(){
   register('operation_status','Inspect durable operation status, including uncertain outcomes after crashes.',z.object({operationId:z.string().uuid()}),true,a=>jobs.get(a.operationId));
   register('operation_cancel','Cancel only before native execution begins; never kill ISTRAM to cancel.',z.object({operationId:z.string().uuid()}),false,a=>jobs.cancel(a.operationId));
   register('ifc_validate','Validate IFC schema, geometry and optional project-specific expectations for product counts, metre scale, projected CRS and property values. Does not prove native export or engineering quantities.',z.object({filePath:textPath,expectedSchema:z.string().optional(),requiredPsets:z.array(z.string()).default([]),geometry:z.boolean().default(false),
-    minGeometryProducts:z.number().int().min(1).optional(),minProducts:z.number().int().min(1).optional(),expectedLengthUnitToMetres:z.number().finite().positive().optional(),expectedProjectedCrs:z.string().min(1).optional(),
-    requiredProperties:z.array(z.object({entityType:z.string().min(1).default('IfcElement'),pset:z.string().min(1),property:z.string().min(1),expectedValue:z.union([z.string(),z.number().finite(),z.boolean()]).optional()})).max(100).default([])
+    minGeometryProducts:z.number().int().min(1).optional(),minProducts:z.number().int().min(1).optional(),minAlignments:z.number().int().min(1).optional(),expectedLengthUnitToMetres:z.number().finite().positive().optional(),expectedProjectedCrs:z.string().min(1).optional(),
+    requiredProperties:z.array(z.object({entityType:z.string().min(1).default('IfcElement'),pset:z.string().min(1),property:z.string().min(1),expectedValue:z.union([z.string(),z.number().finite(),z.boolean()]).optional()})).max(100).default([]),
+    dgcLocation: dgcLocationOptions.optional()
   }),true,a=>worker('ifc_validate',a,30*60*1000));
   for(const [name,uri,read] of [
     ['system_status','istram://system/status',()=>detectIstramEnvironment()],

@@ -57,6 +57,62 @@ def classification_table(reference):
     return match.group(1) if match else None
 
 
+def inspect_profile(file, catalog_dir, required_tables, classes, sample_limit):
+    """Preflight the classification sections of the observed FCV revisions."""
+    catalog, files = read_catalog(catalog_dir)
+    with Path(file).open("rb") as stream:
+        data = stream.read(4 * 1024 * 1024 + 1)
+    if len(data) > 4 * 1024 * 1024:
+        raise ValueError("FCV exceeds 4 MiB")
+    try:
+        lines = data.decode("utf-8-sig").splitlines()
+    except UnicodeDecodeError:
+        lines = data.decode("cp1252").splitlines()
+    version = re.fullmatch(r"CLASIF_VERSION (3\.70|3\.80)", lines[0] if lines else "")
+    if not version:
+        raise ValueError("Expected FCV CLASIF_VERSION 3.70 or 3.80")
+    markers = [(index, match.group(1)) for index, line in enumerate(lines)
+               if (match := re.fullmatch(r"#CLASIF\.([1-7])", line))]
+    if [number for _, number in markers] != list("1234567"):
+        raise ValueError("FCV must contain the seven ordered RCEclass tables")
+    mappings = {}
+    for position, (start, number) in enumerate(markers):
+        end = markers[position + 1][0] if position + 1 < len(markers) else len(lines)
+        table = "0" + number
+        header = lines[start + 1:start + 9]
+        if len(header) != 8 or header[2] != files[table]["file"]:
+            raise ValueError(f"Unexpected FCV table header at line {start + 1}")
+        by_class = {}
+        for index in range(start + 9, end):
+            if not lines[index].strip():
+                continue
+            columns = lines[index].split(";")
+            if len(columns) < 7 or not columns[2].isdigit() or len(columns) != 7 + 4 * int(columns[2]):
+                raise ValueError(f"Unrecognized FCV row at line {index + 1}")
+            if columns[0]:
+                by_class.setdefault(columns[0], []).extend(
+                    (columns[j], columns[j + 1]) for j in range(6, len(columns) - 1, 4))
+        mappings[table] = by_class
+    selected = list(dict.fromkeys(classes)) if classes else sorted(set().union(*(set(m) for m in mappings.values())))
+    samples, counts = [], Counter()
+    for name in selected:
+        for table, by_class in mappings.items():
+            rows = by_class.get(name, [])
+            unknown = sorted({code for code, _ in rows if code not in catalog[table]})
+            ambiguous = sorted({code for code, _ in rows if code in files[table]["ambiguousCodes"]})
+            missing_labels = sorted({code for code, label in rows if not label.strip()})
+            if not (unknown or ambiguous or missing_labels or (table in required_tables and not rows)):
+                continue
+            counts[table] += 1
+            if len(samples) < sample_limit:
+                samples.append({"istramClass": name, "table": table, "missingAssignment": not rows,
+                                "unknownCodes": unknown, "ambiguousCodes": ambiguous,
+                                "codesWithoutDescription": missing_labels})
+    return {"version": version.group(1), "sha256": hashlib.sha256(data).hexdigest(), "classes": len(selected),
+            "scope": "requested_classes" if classes else "all_profile_classes",
+            "requiredTables": required_tables, "issueCountsByTable": dict(counts), "samples": samples}
+
+
 def audit(model, catalog_dir, required_tables, sample_limit):
     from ifcopenshell.util.element import get_pset, get_type
 

@@ -268,7 +268,9 @@ def validate_ifc(params):
     geometry=[]
     if params.get("geometry"):
         import ifcopenshell.geom
+        from ifcopenshell import ifcopenshell_wrapper
         settings=ifcopenshell.geom.settings()
+        settings.set("dimensionality", ifcopenshell_wrapper.CURVES_SURFACES_AND_SOLIDS)
         for element in products:
             if not element.Representation:
                 continue
@@ -285,19 +287,27 @@ def validate_ifc(params):
     if expected_unit is not None and abs(unit_scale-expected_unit)>max(1e-12,abs(expected_unit)*1e-9):
         issues.append({"level":"error","message":"Length unit scale differs from expectation"})
     projected_crs=[getattr(e,"Name",None) for e in optional_type("IfcProjectedCRS")]
+    alignments=len(optional_type("IfcAlignment"))
+    if alignments < params.get("minAlignments",0):
+        issues.append({"level":"error","message":"IfcAlignment count below requested minimum"})
     if params.get("expectedProjectedCrs") and params["expectedProjectedCrs"] not in projected_crs:
         issues.append({"level":"error","message":"Expected projected CRS name absent"})
     if params.get("minGeometryProducts"):
         if not params.get("geometry") or len(geometry)<params["minGeometryProducts"] or any(g["vertices"]<=0 for g in geometry):
             issues.append({"level":"error","message":"Nonempty geometry product count below requested minimum"})
+    location_audit = None
+    if params.get("dgcLocation"):
+        from dgc_location import audit
+        location_audit = audit(model, params["dgcLocation"])
     return {"schema":model.schema_identifier,"sha256":digest(params["filePath"]),"counts":counts,
         "projects":len(projects),"products":len(products),
-        "alignments":len(optional_type("IfcAlignment")),
+        "alignments":alignments,
         "lengthUnitToMetres":unit_scale,"projectedCrsNames":projected_crs,"propertyIssues":property_issues,
         "georeferencing":[str(e) for e in optional_type("IfcMapConversion")],
         "units":[str(e.UnitsInContext) for e in projects],
         "missingPsets":missing,"geometry":geometry,"geometryChecked":bool(params.get("geometry")),
-        "issues":issues,"valid":not issues and not missing and not property_issues}
+        "issues":issues,"valid":not issues and not missing and not property_issues,
+        **({"dgcLocation":location_audit} if location_audit is not None else {})}
 
 def dispatch(method, params):
     if method=="health":
@@ -343,6 +353,12 @@ def dispatch(method, params):
         return {"idle":True}
     if method=="action":return action(params)
     if method=="ifc_validate":return validate_ifc(params)
+    if method=="ifc_istram_alignment_prepare":
+        from ifc_alignment import prepare
+        try:
+            return prepare(params)
+        except (OSError, ValueError) as error:
+            fail("IFC_ALIGNMENT_INPUT_INVALID", str(error))
     if method=="rceclass_catalog_check":
         from rceclass import read_catalog
         try:
@@ -350,6 +366,13 @@ def dispatch(method, params):
         except (OSError, ValueError) as error:
             fail("RCECLASS_CATALOG_INVALID", str(error))
         return {"tables": tables}
+    if method=="rceclass_profile_inspect":
+        from rceclass import inspect_profile
+        try:
+            return inspect_profile(params["profilePath"], params["catalogDirectory"], params["requiredTables"],
+                                   params["classes"], params["sampleLimit"])
+        except (OSError, ValueError) as error:
+            fail("RCECLASS_PROFILE_INVALID", str(error))
     if method=="ifc_rceclass_audit":
         import ifcopenshell
         from rceclass import audit

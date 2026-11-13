@@ -1,0 +1,8 @@
+{
+  "minAlignments": 1,
+  "expectedProjectedCrs": "EPSG:25830",
+  "dgcLocation": {
+    "expectedProjectedCrs": "EPSG:25830",
+    "requiredMarkerPks": [1000, 2000, 3000]
+  }
+}
