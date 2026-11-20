@@ -50,6 +50,10 @@ class WorkerTest(unittest.TestCase):
             result=worker.validate_ifc({"filePath":str(file),"expectedSchema":"IFC4X3"})
             self.assertEqual(result["projects"],1)
             self.assertTrue(result["valid"],result["issues"])
+            coverage = worker.validate_ifc({"filePath":str(file), "requiredSurfaceGeometry":[
+                {"entityType":"IfcGeographicElement","predefinedType":"TERRAIN","minimum":1}]})
+            self.assertFalse(coverage["valid"])
+            self.assertEqual(coverage["surfaceCoverage"][0]["withFaces"], 0)
             invalid=worker.validate_ifc({"filePath":str(file),"expectedSchema":"IFC2X3"})
             self.assertFalse(invalid["valid"])
             empty=worker.validate_ifc({"filePath":str(file),"geometry":True,"minGeometryProducts":1,"minProducts":1,"expectedLengthUnitToMetres":1,"expectedProjectedCrs":"EPSG:25830"})

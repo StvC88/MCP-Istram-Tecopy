@@ -118,3 +118,12 @@ la DGC describen la geolocalización y las propiedades `DGC_LOC`. Para
 Península, contrastar ETRS89/UTM, altimetría oficial y la base cartográfica
 con la documentación de levantamiento. [OC 1/2025](https://cdn.transportes.gob.es/portal-web-transportes/carreteras/normativa_tecnica/01_normativa_general_carreteras/oc_1-2025_requisitos_bim_firmada.pdf)
 y [Real Decreto 1071/2007](https://www.boe.es/buscar/act.php?id=BOE-A-2007-15822).
+# Comprobación de geometría por clase
+
+En `ifc_validate`, `requiredSurfaceGeometry` permite exigir un número mínimo de productos con caras trianguladas por clase IFC y, si procede, por `PredefinedType`. Por ejemplo, para exigir un terreno y una barandilla en un proyecto donde ambos están modelados:
+
+```json
+{"requiredSurfaceGeometry":[{"entityType":"IfcGeographicElement","predefinedType":"TERRAIN","minimum":1},{"entityType":"IfcRailing","minimum":1}]}
+```
+
+El informe `surfaceCoverage` registra los productos encontrados y cuántos tienen caras. Se deben elegir las clases según el FCV aprobado y contrastar los recuentos con el inventario del proyecto. Un mínimo de uno comprueba presencia, no continuidad ni cobertura total.

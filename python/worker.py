@@ -266,22 +266,36 @@ def validate_ifc(params):
                 if not numeric_equal:
                     property_issues.append({"guid":getattr(element,"GlobalId",None),"pset":requirement["pset"],"property":requirement["property"],"actual":actual,"message":"Required property absent or differs"})
     geometry=[]
-    if params.get("geometry"):
+    surface_requirements = params.get("requiredSurfaceGeometry", [])
+    surfaces = set()
+    if params.get("geometry") or surface_requirements:
         import ifcopenshell.geom
         from ifcopenshell import ifcopenshell_wrapper
         settings=ifcopenshell.geom.settings()
         settings.set("dimensionality", ifcopenshell_wrapper.CURVES_SURFACES_AND_SOLIDS)
         for element in products:
+            if not params.get("geometry") and not any(element.is_a(r["entityType"]) for r in surface_requirements):
+                continue
             if not element.Representation:
                 continue
             try:
                 shape=ifcopenshell.geom.create_shape(settings,element)
                 geometry.append({"id":element.id(),"vertices":len(shape.geometry.verts)//3})
+                if len(shape.geometry.faces) >= 3:
+                    surfaces.add(element.id())
             except Exception as error:
                 issues.append({"level":"error","message":"Geometry failed for #"+str(element.id())+": "+str(error)})
     def optional_type(name):
         try:return model.by_type(name)
         except RuntimeError:return []
+    surface_coverage = []
+    for requirement in surface_requirements:
+        matching = [p for p in optional_type(requirement["entityType"])
+                    if "predefinedType" not in requirement or getattr(p, "PredefinedType", None) == requirement["predefinedType"]]
+        modeled = sum(p.id() in surfaces for p in matching)
+        surface_coverage.append({**requirement, "matching": len(matching), "withFaces": modeled})
+        if modeled < requirement["minimum"]:
+            issues.append({"level":"error", "message":"Insufficient surface geometry", "requirement":requirement, "withFaces":modeled})
     unit_scale=ifcopenshell.util.unit.calculate_unit_scale(model)
     expected_unit=params.get("expectedLengthUnitToMetres")
     if expected_unit is not None and abs(unit_scale-expected_unit)>max(1e-12,abs(expected_unit)*1e-9):
@@ -306,7 +320,7 @@ def validate_ifc(params):
         "georeferencing":[str(e) for e in optional_type("IfcMapConversion")],
         "units":[str(e.UnitsInContext) for e in projects],
         "missingPsets":missing,"geometry":geometry,"geometryChecked":bool(params.get("geometry")),
-        "issues":issues,"valid":not issues and not missing and not property_issues,
+        "surfaceCoverage":surface_coverage,"issues":issues,"valid":not issues and not missing and not property_issues,
         **({"dgcLocation":location_audit} if location_audit is not None else {})}
 
 def dispatch(method, params):

@@ -144,6 +144,7 @@ export function createServer(){
   register('operation_status','Inspect durable operation status, including uncertain outcomes after crashes.',z.object({operationId:z.string().uuid()}),true,a=>jobs.get(a.operationId));
   register('operation_cancel','Cancel only before native execution begins; never kill ISTRAM to cancel.',z.object({operationId:z.string().uuid()}),false,a=>jobs.cancel(a.operationId));
   register('ifc_validate','Validate IFC schema, geometry and optional project-specific expectations for product counts, metre scale, projected CRS and property values. Does not prove native export or engineering quantities.',z.object({filePath:textPath,expectedSchema:z.string().optional(),requiredPsets:z.array(z.string()).default([]),geometry:z.boolean().default(false),
+    requiredSurfaceGeometry:z.array(z.object({entityType:z.string().regex(/^Ifc[A-Za-z0-9]+$/),predefinedType:z.string().min(1).optional(),minimum:z.number().int().positive()})).max(50).optional(),
     minGeometryProducts:z.number().int().min(1).optional(),minProducts:z.number().int().min(1).optional(),minAlignments:z.number().int().min(1).optional(),expectedLengthUnitToMetres:z.number().finite().positive().optional(),expectedProjectedCrs:z.string().min(1).optional(),
     requiredProperties:z.array(z.object({entityType:z.string().min(1).default('IfcElement'),pset:z.string().min(1),property:z.string().min(1),expectedValue:z.union([z.string(),z.number().finite(),z.boolean()]).optional()})).max(100).default([]),
     dgcLocation: dgcLocationOptions.optional()
