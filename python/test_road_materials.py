@@ -19,7 +19,7 @@ class RoadMaterialsTest(unittest.TestCase):
                      {"family": "subbase ZA", "functionCode": "F_SUB", "materialCodes": ["M_ZA"]}]
             for number, (stem, _) in TABLES.items():
                 text = {"01": "F_BASE\tBase\t1\nF_SUB\tSubbase\t1",
-                        "03": "M_AGG\tAggregate\t1\nM_BIND\tBinder\t1\nM_ZA\tZahorra\t1"}.get(number, "OTHER\tOther\t1")
+                        "03": "M_AGG\tAggregate\t1\nM_BIND\t" + ("Binder " * 36).strip() + "\t1\nM_ZA\tZahorra\t1"}.get(number, "OTHER\tOther\t1")
                 (root / f"RCEclass_{number}{stem}Istram.fct").write_text(text, encoding="utf8")
             model = ifcopenshell.file(schema="IFC4X3_ADD2")
             scheme = model.create_entity("IfcClassification", Name="RCEclass_01_Funciones")
@@ -37,6 +37,9 @@ class RoadMaterialsTest(unittest.TestCase):
             review = run(dict(args, filePath=str(dst)))
             self.assertEqual([r["verified"] for r in review["rules"]], [1, 1])
             reopened = ifcopenshell.open(str(dst))
+            long_list = next(p.NominalValue for p in reopened.by_type("IfcPropertySingleValue")
+                             if p.Name.endswith("Descripcion_Materiales") and len(p.NominalValue.wrappedValue) > 255)
+            self.assertEqual(long_list.is_a(), "IfcText")
             elements = {e.ObjectType: e for e in reopened.by_type("IfcElement")}
             self.assertEqual(get_material(elements["base AC"]).is_a(), "IfcMaterialConstituentSet")
             self.assertEqual(get_material(elements["subbase ZA"]).Name, "Zahorra")

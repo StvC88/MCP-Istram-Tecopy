@@ -146,7 +146,11 @@ def run(p):
                     MaterialConstituents=[model.create_entity("IfcMaterialConstituent", Name=m.Name, Material=m) for m in parts])
                 model.create_entity("IfcRelAssociatesMaterial", GlobalId=new(), RelatedObjects=targets, RelatingMaterial=selection)
             for _, ps, _, _ in items:
-                edit_pset(model, pset=ps, properties={CODE: "; ".join(codes), LABEL: "; ".join(m.Name for m in parts)})
+                values = {CODE: "; ".join(codes), LABEL: "; ".join(m.Name for m in parts)}
+                # IfcLabel is limited to 255 characters. Long lists need IfcText.
+                edit_pset(model, pset=ps, properties={
+                    name: model.createIfcText(value) if len(value) > 255 else value for name, value in values.items()
+                })
         fd, temp = tempfile.mkstemp(dir=dst.parent, suffix=".ifc")
         os.close(fd)
         try:
