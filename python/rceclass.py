@@ -68,9 +68,9 @@ def inspect_profile(file, catalog_dir, required_tables, classes, sample_limit):
         lines = data.decode("utf-8-sig").splitlines()
     except UnicodeDecodeError:
         lines = data.decode("cp1252").splitlines()
-    version = re.fullmatch(r"CLASIF_VERSION (3\.70|3\.80)", lines[0] if lines else "")
+    version = re.fullmatch(r"CLASIF_VERSION (3\.70|3\.80|4\.00)", lines[0] if lines else "")
     if not version:
-        raise ValueError("Expected FCV CLASIF_VERSION 3.70 or 3.80")
+        raise ValueError("Expected FCV CLASIF_VERSION 3.70, 3.80 or 4.00")
     markers = [(index, match.group(1)) for index, line in enumerate(lines)
                if (match := re.fullmatch(r"#CLASIF\.([1-7])", line))]
     if [number for _, number in markers] != list("1234567"):
@@ -98,6 +98,7 @@ def inspect_profile(file, catalog_dir, required_tables, classes, sample_limit):
     for name in selected:
         for table, by_class in mappings.items():
             rows = by_class.get(name, [])
+            rows = [(code, label) for code, label in rows if code.strip()]
             unknown = sorted({code for code, _ in rows if code not in catalog[table]})
             ambiguous = sorted({code for code, _ in rows if code in files[table]["ambiguousCodes"]})
             missing_labels = sorted({code for code, label in rows if not label.strip()})

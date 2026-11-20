@@ -60,6 +60,26 @@ class WorkerTest(unittest.TestCase):
             self.assertFalse(empty["valid"])
             self.assertGreaterEqual(len(empty["issues"]),3)
 
+    def test_delivery_scope_distinguishes_cut_from_natural_terrain(self):
+        import ifcopenshell
+        import ifcopenshell.api
+        with tempfile.TemporaryDirectory() as directory:
+            model = ifcopenshell.file(schema="IFC4X3")
+            ifcopenshell.api.run("root.create_entity", model, ifc_class="IfcProject")
+            ifcopenshell.api.run("unit.assign_unit", model)
+            ifcopenshell.api.run("root.create_entity", model, ifc_class="IfcEarthworksCut", predefined_type="CUT")
+            file = Path(directory, "road.ifc")
+            model.write(str(file))
+            params = {"filePath": str(file), "excludeNaturalTerrain": True}
+            self.assertFalse(any(issue["message"] == "Natural terrain excluded by delivery scope"
+                                 for issue in worker.validate_ifc(params)["issues"]))
+            terrain = ifcopenshell.api.run("root.create_entity", model, ifc_class="IfcGeographicElement", predefined_type="TERRAIN")
+            model.write(str(file))
+            counts = worker.delivery_inventory(str(file))["groups"]
+            self.assertEqual(counts["cuts"], {"count": 1, "withRepresentation": 0})
+            self.assertEqual(counts["naturalTerrain"]["count"], 1)
+            self.assertIn(terrain.GlobalId, [i.get("guid") for i in worker.validate_ifc(params)["issues"]])
+
     def test_ifc_required_property_values_are_checked_on_matching_elements(self):
         import ifcopenshell
         import ifcopenshell.api

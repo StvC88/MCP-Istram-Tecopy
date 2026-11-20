@@ -15,7 +15,14 @@ test('stdio protocol lists tools and resources, validates arguments, exposes hon
       ISTRAM_PATH:path.join(dir,'absent'),ISTRAM_WORKSPACE:path.join(dir,'work')}});
   const client=new Client({name:'integration-test',version:'1.0.0'});
   try{
+    const lib=path.join(dir,'absent','lib');
+    fs.mkdirSync(lib,{recursive:true});
+    fs.writeFileSync(path.join(lib,'comandos.cfg'),'#1\n2\nbs bs Borra simbolos\nBS BS Busca simbolos\n');
     await client.connect(transport);
+    const exact=await client.callTool({name:'istram_command_catalog',arguments:{exactCodes:['BS','V3D']}});
+    const catalog=JSON.parse(exact.content.find(c=>c.type==='text')!.text).data;
+    assert.deepEqual(catalog.commands.map((c:{code:string})=>c.code),['BS']);
+    assert.deepEqual(catalog.missingCodes,['V3D']);
     const tools=await client.listTools();assert.ok(tools.tools.some(tool => tool.name === 'ifc_rceclass_audit'));
     const usageTool=tools.tools.find(t=>t.name==='usage_capabilities');
     assert.equal(usageTool?.annotations?.readOnlyHint,true);

@@ -32,7 +32,7 @@ const dgcLocationOptions = z.object({
 });
 export function createServer(){
   const server=new McpServer({name:'istram-mcp',version:'0.3.0-rc.1'}, {
-    instructions: 'Start with project_inspect summary=true and the known POL. Before a whole-project BIM export, compare the axis and terrain inventory with the live BIM tree. Verify geometry for the intended road groups, railings and terrain in Virtual 3D. For RCEclass, check the FCV with rceclass_profile_inspect before export and the IFC with ifc_rceclass_audit afterwards. Use ifc_validate for geometry, schema and the project-specific DGC location checks. Command catalog entries are documentation. Use verified recipes for automated native actions.'
+    instructions: 'Start with project_inspect summary=true and the known POL. Before a whole-project BIM export, compare the axis and terrain inventory with the live BIM tree. Select the project root and confirm the IFC edition after restart. Verify cuts, fills and railings; if the delivery excludes natural terrain, use excludeNaturalTerrain in ifc_validate. For RCEclass, check the FCV with rceclass_profile_inspect before export and the IFC with ifc_rceclass_audit afterwards. Use ifc_validate for geometry, schema and the project-specific DGC location checks. Command catalog entries are documentation. Use verified recipes for automated native actions.'
   });
   const workspace=process.env.ISTRAM_WORKSPACE ?? fileURLToPath(new URL('../.local/projects',import.meta.url));
   const projects=new ProjectStore(workspace,async(changes,root)=>{await worker('idle',{changes,projectPath:root});});
@@ -66,10 +66,15 @@ export function createServer(){
       });
   }
   register('istram_detect','Installed components and historical version evidence; licensed modules remain unknown until checked.',z.object({customPath:textPath.optional()}),true,a=>detectIstramEnvironment(a.customPath));
-  register('istram_command_catalog','Keyboard dictionary; entries are documented shortcuts, not verified execution recipes.',z.object({query:z.string().optional(),offset:z.number().int().min(0).default(0),limit:z.number().int().min(1).max(250).default(100)}),true,a=>{
+  register('istram_command_catalog','Look up installed keyboard shortcuts. Pass exactCodes for a case-sensitive batch lookup (bs and BS are different actions). This tool reads the dictionary.',z.object({query:z.string().optional(),exactCodes:z.array(z.string().min(1).max(64)).min(1).max(100).optional(),offset:z.number().int().min(0).default(0),limit:z.number().int().min(1).max(250).default(100)}),true,a=>{
     let commands=parseComandosCfg(path.join(detectIstramEnvironment().basePath,'lib','comandos.cfg'));
-    if(a.query)commands=commands.filter(c=>JSON.stringify(c).toLowerCase().includes(a.query!.toLowerCase()));
-    return {total:commands.length,commands:commands.slice(a.offset,a.offset+a.limit)};
+    const availableCodes=new Set(commands.map(c=>c.code));
+    if(a.exactCodes) commands=commands.filter(c=>a.exactCodes!.includes(c.code!));
+    if(a.query) {
+      const query=a.query.toLowerCase();
+      commands=commands.filter(c=>[c.code,c.command,c.description].some(value=>value?.toLowerCase().includes(query)));
+    }
+    return {total:commands.length,missingCodes:a.exactCodes?.filter(code=>!availableCodes.has(code)),commands:commands.slice(a.offset,a.offset+a.limit)};
   });
   register('project_inspect','Inventory POL and CEJ axes, saved B1M geometry, terrain candidates and auxiliary LON references. Use summary=true for counts or a relative projectFile for detail. Disk evidence requires confirmation in the live BIM tree.',z.object({
     projectPath:textPath, projectFile:textPath.optional(), summary:z.boolean().default(false),
@@ -143,7 +148,9 @@ export function createServer(){
   });
   register('operation_status','Inspect durable operation status, including uncertain outcomes after crashes.',z.object({operationId:z.string().uuid()}),true,a=>jobs.get(a.operationId));
   register('operation_cancel','Cancel only before native execution begins; never kill ISTRAM to cancel.',z.object({operationId:z.string().uuid()}),false,a=>jobs.cancel(a.operationId));
+  register('ifc_delivery_inventory','Read IFC4X3 alignment, cut, fill, guardrail and natural terrain counts before a full validation. Counts representations without generating meshes.',z.object({filePath:textPath}),true,a=>worker('ifc_delivery_inventory',a,10*60*1000));
   register('ifc_validate','Validate IFC schema, geometry and optional project-specific expectations for product counts, metre scale, projected CRS and property values. Does not prove native export or engineering quantities.',z.object({filePath:textPath,expectedSchema:z.string().optional(),requiredPsets:z.array(z.string()).default([]),geometry:z.boolean().default(false),
+    excludeNaturalTerrain:z.boolean().default(false),
     requiredSurfaceGeometry:z.array(z.object({entityType:z.string().regex(/^Ifc[A-Za-z0-9]+$/),predefinedType:z.string().min(1).optional(),minimum:z.number().int().positive()})).max(50).optional(),
     minGeometryProducts:z.number().int().min(1).optional(),minProducts:z.number().int().min(1).optional(),minAlignments:z.number().int().min(1).optional(),expectedLengthUnitToMetres:z.number().finite().positive().optional(),expectedProjectedCrs:z.string().min(1).optional(),
     requiredProperties:z.array(z.object({entityType:z.string().min(1).default('IfcElement'),pset:z.string().min(1),property:z.string().min(1),expectedValue:z.union([z.string(),z.number().finite(),z.boolean()]).optional()})).max(100).default([]),

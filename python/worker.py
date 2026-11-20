@@ -219,6 +219,27 @@ def action(params):
         # UI changes may have occurred. Never silently retry a native action.
         fail("OUTCOME_UNCERTAIN",str(error))
 
+def delivery_inventory(file_path):
+    """Count persisted entities and their representations without tessellating the model."""
+    import ifcopenshell
+    model = ifcopenshell.open(file_path)
+    if not model.schema_identifier.startswith("IFC4X3"):
+        fail("UNSUPPORTED_SCHEMA", "Road delivery inventory requires IFC4X3")
+    counts = {}
+    for name, kind, key in (
+        ("IfcAlignment", None, "alignments"),
+        ("IfcEarthworksCut", None, "cuts"),
+        ("IfcEarthworksFill", None, "fills"),
+        ("IfcRailing", "GUARDRAIL", "guardrails"),
+        ("IfcGeographicElement", "TERRAIN", "naturalTerrain"),
+    ):
+        objects = [x for x in model.by_type(name) if kind is None or x.PredefinedType == kind]
+        represented = sum(bool(x.Representation and any(r.Items for r in x.Representation.Representations))
+                          for x in objects)
+        counts[key] = {"count": len(objects), "withRepresentation": represented}
+    return {"schema": model.schema_identifier, "groups": counts, "geometryValidated": False}
+
+
 def validate_ifc(params):
     import ifcopenshell
     import ifcopenshell.validate
@@ -288,6 +309,11 @@ def validate_ifc(params):
     def optional_type(name):
         try:return model.by_type(name)
         except RuntimeError:return []
+    if params.get("excludeNaturalTerrain"):
+        for element in optional_type("IfcGeographicElement"):
+            if getattr(element, "PredefinedType", None) == "TERRAIN":
+                issues.append({"level": "error", "message": "Natural terrain excluded by delivery scope",
+                               "guid": element.GlobalId})
     surface_coverage = []
     for requirement in surface_requirements:
         matching = [p for p in optional_type(requirement["entityType"])
@@ -366,6 +392,7 @@ def dispatch(method, params):
                 fail("CHANGE_UNVERIFIED","Line does not match verified writer rule")
         return {"idle":True}
     if method=="action":return action(params)
+    if method=="ifc_delivery_inventory":return delivery_inventory(params["filePath"])
     if method=="ifc_validate":return validate_ifc(params)
     if method=="ifc_istram_alignment_prepare":
         from ifc_alignment import prepare

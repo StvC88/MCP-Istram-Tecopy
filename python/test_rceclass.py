@@ -5,7 +5,7 @@ import unittest
 import ifcopenshell
 import ifcopenshell.api
 
-from rceclass import TABLES, audit
+from rceclass import TABLES, audit, inspect_profile
 
 
 class RceclassTest(unittest.TestCase):
@@ -36,3 +36,17 @@ class RceclassTest(unittest.TestCase):
             self.assertEqual(result["issueCounts"], {"association_mismatch": 1, "unknown_code": 1})
             self.assertEqual(result["conformingElements"], 0)
             self.assertEqual(result["unknownCodeSamples"][0]["code"], "ISTRAM fallback")
+
+    def test_project_fcv_400_ignores_unassigned_slots(self):
+        with tempfile.TemporaryDirectory() as directory:
+            lines = ["CLASIF_VERSION 4.00"]
+            for number, (stem, _) in TABLES.items():
+                name = f"RCEclass_{number}{stem}Istram.fct"
+                Path(directory, name).write_text("OK\tEtiqueta\t1\n", encoding="utf8")
+                lines.extend([f"#CLASIF.{int(number)}", stem, "1", name, "", "", "", "", "",
+                              "Familia;Familia;1;0;0;-1;;;;;"])
+            profile = Path(directory, "istram.fcv")
+            profile.write_text("\n".join(lines), encoding="utf8")
+            result = inspect_profile(profile, directory, ["01"], ["Familia"], 10)
+            self.assertEqual(result["issueCountsByTable"], {"01": 1})
+            self.assertTrue(result["samples"][0]["missingAssignment"])
