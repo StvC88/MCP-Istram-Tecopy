@@ -148,6 +148,10 @@ export function createServer(){
   });
   register('operation_status','Inspect durable operation status, including uncertain outcomes after crashes.',z.object({operationId:z.string().uuid()}),true,a=>jobs.get(a.operationId));
   register('operation_cancel','Cancel only before native execution begins; never kill ISTRAM to cancel.',z.object({operationId:z.string().uuid()}),false,a=>jobs.cancel(a.operationId));
+  register('ifc_railing_variant','Derive a new metric IFC4X3_ADD2 using an explicit selection of Istram three-rail meshes. Shift the middle rail vertically; retain identity, posts and other products. Requires the observed ring pattern. This operates on an existing IFC.',z.object({
+    filePath:textPath,outputPath:textPath,guids:z.array(z.string().regex(/^[0-3][0-9A-Za-z_$]{21}$/)).min(1).max(100).refine(ids=>new Set(ids).size===ids.length),
+    offsetMetres:z.number().finite().min(-0.1).max(0.1).refine(n=>n!==0)
+  }),false,a=>worker('ifc_railing_variant',a,30*60*1000));
   register('ifc_delivery_inventory','Read IFC4X3 alignment, cut, fill, guardrail and natural terrain counts before a full validation. Counts representations without generating meshes.',z.object({filePath:textPath}),true,a=>worker('ifc_delivery_inventory',a,10*60*1000));
   register('ifc_validate','Validate IFC schema, geometry and optional project-specific expectations for product counts, metre scale, projected CRS and property values. Does not prove native export or engineering quantities.',z.object({filePath:textPath,expectedSchema:z.string().optional(),requiredPsets:z.array(z.string()).default([]),geometry:z.boolean().default(false),
     excludeNaturalTerrain:z.boolean().default(false),

@@ -392,6 +392,9 @@ def dispatch(method, params):
                 fail("CHANGE_UNVERIFIED","Line does not match verified writer rule")
         return {"idle":True}
     if method=="action":return action(params)
+    if method=="ifc_railing_variant":
+        from railing_variant import prepare
+        return prepare(params)
     if method=="ifc_delivery_inventory":return delivery_inventory(params["filePath"])
     if method=="ifc_validate":return validate_ifc(params)
     if method=="ifc_istram_alignment_prepare":
