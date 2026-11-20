@@ -147,4 +147,25 @@ En Massalavés se prepararon secciones locales en la copia del proyecto y se apl
 
 Para el cliente JS de este repositorio, el tiempo de espera es el segundo argumento de `callTool(params, {timeout})`. Las escrituras de modelos grandes pueden superar el minuto. El destino se publica tras terminar la escritura temporal. En Windows se usa el renombrado que falla si ya existe el destino. Para aceptar una variante, reabrirla, comparar por GUID cada malla original y resultante, y auditar por separado las propiedades RCE_CLA y las asociaciones exigidas por el BEP. Cronometrar el flujo nativo por separado antes de comparar tiempos.
 La llamada MCP de prueba tardó 151 segundos para 79 secciones por lado. El posprocesado de clasificación y la reapertura son tiempos adicionales. No se dispone de una medición manual comparable.
+
 En la prueba nativa posterior al reinicio, Generar Proyecto llegó al eje 6 y mostró un aviso de longitudinal ausente antes del eje ensayado. Registrar el texto del aviso obtenido por session_snapshot; aceptar el mensaje no acredita que se haya recuperado esa rasante. En la variante IFC reabierta se verificaron 395 vértices desplazados y 2.244 caras por barandilla, con la malla de los postes intacta.
+
+### Materiales de firme en IFC 4.3 ADD2
+
+`ifc_road_materials` audita un IFC exportado y puede escribir una nueva entrega. La tabla 01 identifica la función de la capa. La 03 identifica sus materiales. En `RCE_CLA_03_Codigo_Materiales` y `RCE_CLA_03_Descripcion_Materiales`, el manual prescribe el mismo orden y el separador punto y coma seguido de espacio para varios valores. Véanse las páginas 24 y 36 del [manual distribuido con RCEclass](https://www.transportes.gob.es/carreteras/rceclass).
+
+Pasar `filePath`, la carpeta de tablas FCT en `catalogDirectory` y las reglas confirmadas para el proyecto. Un ejemplo de dos reglas es:
+
+```json
+[
+  {"family":"BBTM-11B","functionCode":"F_FIR_10_05_10","materialCodes":["M_CMM_35_30","M_CPR_50_30"]},
+  {"family":"ZA","functionCode":"F_FIR_05_05","materialCodes":["M_CMM_35_40"]}
+]
+```
+
+Cada regla exige coincidencia literal de la familia IFC (`ObjectType`) y de la función en el Pset y en su referencia. La segunda regla requiere una subbase identificada como ZA. Un relleno de zahorra tiene otra función. Confirmar la correspondencia de nombres con la sección tipo, el perfil FCV y las especificaciones de la mezcla en cada proyecto.
+
+1. Omitir `outputPath` para previsualizar coincidencias, discrepancias y familias pendientes. Con `rules: []` se obtiene un inventario sin reglas de proyecto.
+2. Para asociar también materiales que el IFC ya declara correctamente en tabla 03, indicar `useExistingTable03: true`. El MCP comprueba códigos, descripciones, referencias de clasificación y función. Esta comprobación acredita la coherencia del fichero. La especificación del proyecto acredita la composición.
+3. Indicar una ruta IFC nueva para escribir. El MCP asocia un `IfcMaterial` para un solo material o un `IfcMaterialConstituentSet` para una mezcla, vincula los materiales a sus referencias de catálogo y conserva las clases IFC de los productos. Las fracciones requieren datos de dosificación independientes. Los conflictos con materiales preexistentes o propiedades compartidas se incluyen en el resultado para revisión.
+4. Reabrir el resultado con las mismas reglas y sin destino. Revisar `verified`, los conflictos, las familias sin regla y el recuento de elementos con material. El perfil FCV de Istram debe revisarse por separado para reproducir la asignación en una futura exportación nativa.

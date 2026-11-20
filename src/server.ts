@@ -148,6 +148,11 @@ export function createServer(){
   });
   register('operation_status','Inspect durable operation status, including uncertain outcomes after crashes.',z.object({operationId:z.string().uuid()}),true,a=>jobs.get(a.operationId));
   register('operation_cancel','Cancel only before native execution begins; never kill ISTRAM to cancel.',z.object({operationId:z.string().uuid()}),false,a=>jobs.cancel(a.operationId));
+  register('ifc_road_materials','Preview exact Istram family and RCEclass function matches, verify IFC constituents and table 03, or write a new IFC with catalogued materials. Omit outputPath to audit.',z.object({
+    filePath:textPath,outputPath:textPath.optional(),catalogDirectory:textPath,useExistingTable03:z.boolean().optional(),
+    rules:z.array(z.object({family:z.string().min(1),functionCode:z.string().startsWith('F_'),
+      materialCodes:z.array(z.string().startsWith('M_')).min(1).max(32)})).max(1000)
+  }),false,a=>worker('ifc_road_materials',a,30*60*1000));
   register('ifc_railing_variant','Derive a new metric IFC4X3_ADD2 using an explicit selection of Istram three-rail meshes. Shift the middle rail vertically; retain identity, posts and other products. Requires the observed ring pattern. This operates on an existing IFC.',z.object({
     filePath:textPath,outputPath:textPath,guids:z.array(z.string().regex(/^[0-3][0-9A-Za-z_$]{21}$/)).min(1).max(100).refine(ids=>new Set(ids).size===ids.length),
     offsetMetres:z.number().finite().min(-0.1).max(0.1).refine(n=>n!==0)
