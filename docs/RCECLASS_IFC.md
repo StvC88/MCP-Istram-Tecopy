@@ -171,3 +171,9 @@ Cada regla exige coincidencia literal de la familia IFC (`ObjectType`) y de la f
 4. Reabrir el resultado con las mismas reglas y sin destino. Revisar `verified`, los conflictos, las familias sin regla y el recuento de elementos con material. El perfil FCV de Istram debe revisarse por separado para reproducir la asignación en una futura exportación nativa.
 
 En la prueba de Massalavés, el IFC de partida contenía 1.764 elementos y 457 declaraciones de tabla 03. Ningún elemento tenía una asociación IFC de material. Al reabrir la entrega se verificaron las 457 declaraciones existentes y 177 capas de firme adicionales. Las 944 mallas trianguladas conservaron sus índices de caras y sus coordenadas. Quedaron 1.130 elementos sin asociación de material. La regla de subbase ZA tuvo cero coincidencias. Las 69 ocurrencias S-C y las 57 de z.a. relleno carecían de función en el IFC. La clasificación de esas capas requiere contrastar la sección tipo con el proyecto nativo.
+
+### Estado de la regeneración nativa al 20 de noviembre de 2026
+
+En `MASS_06N.pol`, el volumen del eje 6 solicita `MASS_02-6.lon` y el del eje 26 (VIAL-04) solicita `MASS6-26.lon`. Istram mostró ambos avisos al generar el proyecto. El archivo `MASS_06-26.vol` conserva datos de rasante entre los PK 0 y 20 y referencia por separado el longitudinal externo. El eje 26 también figura en el IFC revisado. El paquete original de 742 entradas revisado carecía de archivos LON.
+
+La comprobación de materiales se realizó sobre la exportación existente. La regeneración nativa completa queda pendiente de recuperar ambos longitudinales o de que el responsable del trazado confirme que las referencias han quedado obsoletas. Tras resolverlas, generar desde la raíz del proyecto y contrastar de nuevo los ejes, los sólidos y los materiales.
