@@ -76,7 +76,7 @@ export function createServer(){
     }
     return {total:commands.length,missingCodes:a.exactCodes?.filter(code=>!availableCodes.has(code)),commands:commands.slice(a.offset,a.offset+a.limit)};
   });
-  register('project_inspect','Inventory POL and CEJ axes, saved B1M geometry, terrain candidates and auxiliary LON references. Use summary=true for counts or a relative projectFile for detail. Disk evidence requires confirmation in the live BIM tree.',z.object({
+  register('project_inspect','Inventory POL and CEJ axes, saved B1M geometry, terrain candidates and auxiliary LON references. Check projectStatus and inspectionWarnings before generation: no_project or temporary_only requires the saved project files. Use summary=true for counts or a relative projectFile for detail. Dependency warnings cover returned projects only. Disk evidence requires confirmation in the live BIM tree.',z.object({
     projectPath:textPath, projectFile:textPath.optional(), summary:z.boolean().default(false),
     includeTemporary:z.boolean().optional(), offset:z.number().int().min(0).default(0), limit:z.number().int().min(1).max(100).default(10)
   }),true,a=>a.summary ? inspectProjectSummary(a.projectPath,a) : inspectProjectDirectory(a.projectPath,a));
@@ -158,13 +158,19 @@ export function createServer(){
     offsetMetres:z.number().finite().min(-0.1).max(0.1).refine(n=>n!==0)
   }),false,a=>worker('ifc_railing_variant',a,30*60*1000));
   register('ifc_delivery_inventory','Read IFC4X3 alignment, cut, fill, guardrail and natural terrain counts before a full validation. Counts representations without generating meshes.',z.object({filePath:textPath}),true,a=>worker('ifc_delivery_inventory',a,10*60*1000));
-  register('ifc_validate','Validate IFC schema, geometry and optional project-specific expectations for product counts, metre scale, projected CRS and property values. Does not prove native export or engineering quantities.',z.object({filePath:textPath,expectedSchema:z.string().optional(),requiredPsets:z.array(z.string()).default([]),geometry:z.boolean().default(false),
+  const ifcValidationOptions=z.object({filePath:textPath,expectedSchema:z.string().optional(),requiredPsets:z.array(z.string()).default([]),geometry:z.boolean().default(false),
     excludeNaturalTerrain:z.boolean().default(false),
     requiredSurfaceGeometry:z.array(z.object({entityType:z.string().regex(/^Ifc[A-Za-z0-9]+$/),predefinedType:z.string().min(1).optional(),minimum:z.number().int().positive()})).max(50).optional(),
     minGeometryProducts:z.number().int().min(1).optional(),minProducts:z.number().int().min(1).optional(),minAlignments:z.number().int().min(1).optional(),expectedLengthUnitToMetres:z.number().finite().positive().optional(),expectedProjectedCrs:z.string().min(1).optional(),
     requiredProperties:z.array(z.object({entityType:z.string().min(1).default('IfcElement'),pset:z.string().min(1),property:z.string().min(1),expectedValue:z.union([z.string(),z.number().finite(),z.boolean()]).optional()})).max(100).default([]),
     dgcLocation: dgcLocationOptions.optional()
-  }),true,a=>worker('ifc_validate',a,30*60*1000));
+  });
+  register('ifc_validate','Validate IFC schema, geometry and project expectations. For large models use ifc_validation_start and operation_status to avoid the client call timeout. Does not prove native export or engineering quantities.',ifcValidationOptions,true,a=>worker('ifc_validate',a,30*60*1000));
+  register('ifc_validation_start','Start a persisted IFC validation job and return its id immediately. Poll operation_status with this id. A completed job can contain valid=false; inspect its result. Reads the IFC without modifying it. Keep the source file unchanged until completion.',
+    ifcValidationOptions.extend({requestId}),false,a=>{
+      const {requestId:key,...params}=a;
+      return jobs.start('ifc-validation:'+key,{operation:'ifc_validate',...params},'ifc-validation',()=>worker('ifc_validate',params,30*60*1000));
+    });
   for(const [name,uri,read] of [
     ['system_status','istram://system/status',()=>detectIstramEnvironment()],
     ['ifc_classes','istram://ifc/classes',()=>readIfcMappings(detectIstramEnvironment().basePath)],

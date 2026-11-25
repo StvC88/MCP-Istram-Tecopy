@@ -1,4 +1,5 @@
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -7,6 +8,16 @@ import unittest
 import worker
 
 class WorkerTest(unittest.TestCase):
+    def test_protocol_preserves_utf8_with_legacy_windows_stdio_encoding(self):
+        request_id = "Excavación escalón / alineación ñ / 道路"
+        request = json.dumps({"id": request_id, "method": "health"}, ensure_ascii=False).encode("utf-8")
+        result = subprocess.run([sys.executable, str(Path(worker.__file__))], input=request,
+                                capture_output=True, check=True,
+                                env={**os.environ, "PYTHONIOENCODING": "cp1252"})
+        response = json.loads(result.stdout)
+        self.assertTrue(response["ok"])
+        self.assertEqual(response["id"], request_id)
+
     def test_snapshot_includes_istramx_and_skips_launcher(self):
         from unittest.mock import MagicMock, patch
         application = MagicMock()
@@ -79,6 +90,26 @@ class WorkerTest(unittest.TestCase):
             self.assertEqual(counts["cuts"], {"count": 1, "withRepresentation": 0})
             self.assertEqual(counts["naturalTerrain"]["count"], 1)
             self.assertIn(terrain.GlobalId, [i.get("guid") for i in worker.validate_ifc(params)["issues"]])
+
+    def test_large_ifc_diagnostics_keep_failure_counts_below_bridge_limit(self):
+        import ifcopenshell
+        import ifcopenshell.api
+        with tempfile.TemporaryDirectory() as directory:
+            model = ifcopenshell.file(schema="IFC4X3")
+            ifcopenshell.api.run("root.create_entity", model, ifc_class="IfcProject")
+            ifcopenshell.api.run("unit.assign_unit", model)
+            for _ in range(125):
+                model.create_entity("IfcElementQuantity", GlobalId=ifcopenshell.guid.new(),
+                                    Name="Q" * 40000, Quantities=())
+            path = Path(directory, "many-invalid-quantities.ifc")
+            model.write(str(path))
+            result = worker.validate_ifc({"filePath":str(path)})
+            self.assertFalse(result["valid"])
+            self.assertGreaterEqual(result["diagnosticCounts"]["issues"], 125)
+            self.assertTrue(result["diagnosticsTruncated"])
+            self.assertEqual(len(result["issues"]), 100)
+            self.assertEqual(sum(result["schemaIssueCategories"].values()),result["diagnosticCounts"]["issues"])
+            self.assertLess(len(json.dumps(result).encode("utf-8")), 512 * 1024)
 
     def test_ifc_required_property_values_are_checked_on_matching_elements(self):
         import ifcopenshell

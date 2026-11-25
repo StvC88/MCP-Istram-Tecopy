@@ -5,7 +5,8 @@ import { atomicJson, DomainError, encodeDocument, hash, readDocument, safeChild,
 import { parseNativeContent } from './parsers.js';
 
 type InspectionOptions = {projectFile?: string; summary?: boolean; includeTemporary?: boolean; offset?: number; limit?: number};
-const isTemporaryProjectFile = (file: string) => ['tmp', 'res'].includes(file.split(path.sep)[0]!.toLowerCase());
+const isTemporaryProjectFile = (file: string) => file.split(path.sep).slice(0,-1)
+  .some(directory => ['tmp', 'res'].includes(directory.toLowerCase()));
 
 export function inspectProjectDirectory(projectPath:string, options: InspectionOptions = {}) {
   const root=fs.realpathSync(projectPath), files=walk(root);
@@ -32,13 +33,14 @@ export function inspectProjectDirectory(projectPath:string, options: InspectionO
       const external = !within(root, absolute);
       const exists = external ? fs.existsSync(absolute) : knownFiles.has(keyFor(path.relative(root, absolute)));
       const candidates = [path.resolve(root, name)];
-      if (tag === 'DAR') candidates.push(path.resolve(root, 'lib', name));
+      if (['DAR','DAF'].includes(tag)) candidates.unshift(path.resolve(projectFolder, 'lib', name));
+      if (['DAR','DAF'].includes(tag)) candidates.push(path.resolve(root, 'lib', name));
       const match = !exists && !external ? candidates.find(candidate =>
         within(root, candidate) && knownFiles.has(keyFor(path.relative(root, candidate)))) : undefined;
       return {tag, file:name, exists, external, candidate: match && path.relative(root, match), source, line};
     };
     const refs=records.flatMap(record=>{
-      if(!['CEJ','VOL','VOLV','PER','PERV','DT','TOP','EDM','DAR'].includes(record.tag))return[];
+      if(!['CEJ','VOL','VOLV','PER','PERV','DT','TOP','EDM','DAR','DAF'].includes(record.tag))return[];
       const names=record.tag === 'EDM' && /\.(edm|edb)$/i.test(record.values.join(' '))
         ? [record.values.join(' ')]
         : record.values.filter(v=>/\.(cej|vol|per|edm|edb|top|ttp|toc|dtv|dof|dar)$/i.test(v));
@@ -75,7 +77,7 @@ export function inspectProjectDirectory(projectPath:string, options: InspectionO
       alzadoAxisIdsWithoutNonemptyBim: alzadoAxisIds.filter(id => !cachedAxisIds.has(id)),
       liveTreeVerified: false
     };
-    return {file,title:records.find(r=>r.tag==='TP')?.values.join(' ')??'',references:refs,axes,modelLoadEvidence,sha256:doc.sha256};
+    return {file,projectDirectory:projectFolder,title:records.find(r=>r.tag==='TP')?.values.join(' ')??'',references:refs,axes,modelLoadEvidence,sha256:doc.sha256};
   });
   const grouped=new Map<string,{file:string;missing:boolean;external:boolean;candidate?:string;occurrences:{project:string;tag:string;source:string;line:number}[]}>();
   for(const p of projects)for(const r of p.references.filter(r=>!r.exists||r.external)){
@@ -84,10 +86,17 @@ export function inspectProjectDirectory(projectPath:string, options: InspectionO
     warning.occurrences.push({project:p.file,tag:r.tag,source:r.source,line:r.line});grouped.set(key,warning);
   }
   const dependencyWarnings=[...grouped.values()];
+  const persistentPolCount = allPols.filter(file => !isTemporaryProjectFile(file)).length;
+  const projectStatus = persistentPolCount > 0 ? 'project_found' : allPols.length > 0 ? 'temporary_only' : 'no_project';
+  const inspectionWarnings = projectStatus === 'no_project'
+    ? ['NO_PROJECT_POL: No .pol project exists under projectPath. Verify the selected folder and finish copying/downloading the project before native generation or IFC export.']
+    : projectStatus === 'temporary_only'
+      ? ['TEMPORARY_POL_ONLY: Only temporary .pol files were found. Select the saved project before native generation or IFC export.'] : [];
   return {projectDir:root,filesCount:files.length,alignmentsCount:ext('.ali').length,profilesCount:ext('.ras').length,
+    projectStatus, persistentPolCount, inspectionWarnings,
     temporaryPolCount: allPols.filter(isTemporaryProjectFile).length, polCount: pols.length,
     hasIfc:ext('.ifc').length>0,projects,nativeFiles:{cej:ext('.cej'),vol:ext('.vol'),per:ext('.per')},
-    dependencyWarnings,warnings:dependencyWarnings.map(r=>(r.external?'External reference: ':r.candidate?'Unverified project-root match: ':'Missing reference: ')+r.file+' ('+r.occurrences.length+' occurrences)')};
+    dependencyWarnings,warnings:[...inspectionWarnings,...dependencyWarnings.map(r=>(r.external?'External reference: ':r.candidate?'Unverified project-root match: ':'Missing reference: ')+r.file+' ('+r.occurrences.length+' occurrences)')]};
 }
 
 export function inspectProjectSummary(projectPath: string, options: InspectionOptions) {
@@ -95,10 +104,13 @@ export function inspectProjectSummary(projectPath: string, options: InspectionOp
   const offset = options.offset ?? 0, limit = options.limit ?? 10;
   return {
     projectDir: result.projectDir, filesCount: result.filesCount, aliFileCount: result.alignmentsCount,
+    projectStatus: result.projectStatus, persistentPolCount: result.persistentPolCount,
+    inspectionWarnings: result.inspectionWarnings,
     rasFileCount: result.profilesCount, hasIfc: result.hasIfc, temporaryPolCount: result.temporaryPolCount,
     total: result.polCount, offset, limit, nextOffset: offset + limit < result.polCount ? offset + limit : null,
     projects: result.projects.map(project => ({
       file: project.file, title: project.title.slice(0, 256),
+      projectDirectory: project.projectDirectory,
       temporary: isTemporaryProjectFile(project.file),
       axisRecordCount: project.axes.length, referenceCount: project.references.length, sha256: project.sha256,
       modelLoadEvidence: {
@@ -111,6 +123,7 @@ export function inspectProjectSummary(projectPath: string, options: InspectionOp
       }
     })),
     dependencyWarningCount: result.dependencyWarnings.length,
+    dependencyWarningScope: 'returned_projects_only',
     dependencyWarnings: result.dependencyWarnings.slice(0, 10).map(({occurrences, ...warning}) => ({
       ...warning, occurrenceCount: occurrences.length
     }))

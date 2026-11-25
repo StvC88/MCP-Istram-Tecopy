@@ -83,6 +83,70 @@ test('dependency warnings group occurrences and preserve their project/tag conte
   assert.deepEqual(new Set(p.dependencyWarnings[0]!.occurrences.map(o=>o.project)),new Set(['a.pol','b.pol']));
 });
 
+test('empty and auxiliary-only folders cannot look like an exportable project inventory',t=>{
+  const root=base(t);
+  for (const summary of [false,true]) {
+    const result=summary ? inspectProjectSummary(root,{}) : inspectProjectDirectory(root);
+    assert.equal(result.projectStatus,'no_project');
+    assert.match(result.inspectionWarnings[0]!,/NO_PROJECT_POL/);
+  }
+  fs.mkdirSync(path.join(root,'lib'));fs.writeFileSync(path.join(root,'lib','ISPOL.mod'),'settings');
+  assert.equal(inspectProjectSummary(root,{}).projectStatus,'no_project');
+  fs.mkdirSync(path.join(root,'tmp'));fs.writeFileSync(path.join(root,'tmp','ini.pol'),'');
+  assert.equal(inspectProjectSummary(root,{}).projectStatus,'temporary_only');
+  assert.match(inspectProjectDirectory(root).inspectionWarnings[0]!,/TEMPORARY_POL_ONLY/);
+  fs.writeFileSync(path.join(root,'road.pol'),'TP Saved project\n');
+  const page=inspectProjectSummary(root,{offset:100});
+  assert.equal(page.projects.length,0);
+  assert.equal(page.projectStatus,'project_found');
+  assert.equal(page.persistentPolCount,1);
+  assert.deepEqual(page.inspectionWarnings,[]);
+  assert.equal(page.dependencyWarningScope,'returned_projects_only');
+});
+
+test('nested project inventories exclude temporary POLs and BIM caches at every depth',t=>{
+  const root=base(t);
+  for (const folder of ['road','road/tmp','road/res']) fs.mkdirSync(path.join(root,folder),{recursive:true});
+  fs.writeFileSync(path.join(root,'road','tmp','ini.pol'),'CEJ 1 ini.cej\n');
+  fs.writeFileSync(path.join(root,'road','tmp','ini.cej'),'EJE 1 0 2 Temporary axis\n');
+  fs.writeFileSync(path.join(root,'road','tmp','ISPOL1.b1m'),'temporary geometry');
+  fs.writeFileSync(path.join(root,'road','res','fin.pol'),'TP Temporary\n');
+  const temporary=inspectProjectSummary(root,{});
+  assert.equal(temporary.projectStatus,'temporary_only');
+  assert.equal(temporary.total,0);
+  assert.equal(temporary.temporaryPolCount,2);
+  fs.writeFileSync(path.join(root,'road','saved.pol'),'CEJ 1 saved.cej\nALZ 1 1 1\n');
+  fs.writeFileSync(path.join(root,'road','saved.cej'),'EJE 1 0 2 Saved axis\n');
+  const summary=inspectProjectSummary(root,{});
+  assert.equal(summary.total,1);
+  assert.equal(summary.projects[0]!.file,path.join('road','saved.pol'));
+  assert.equal(summary.projects[0]!.projectDirectory,path.join(fs.realpathSync(root),'road'));
+  assert.equal(summary.projects[0]!.modelLoadEvidence.persistedBimAxisCount,0);
+  assert.equal(inspectProjectSummary(root,{includeTemporary:true}).total,3);
+  assert.equal(inspectProjectSummary(root,{projectFile:'road/tmp/ini.pol'}).projects[0]!.temporary,true);
+});
+
+test('nested project area libraries resolve independently of the inventory root',t=>{
+  const root=base(t),project=path.join(root,'road');
+  fs.mkdirSync(path.join(project,'lib'),{recursive:true});
+  fs.writeFileSync(path.join(project,'saved.pol'),'DAR 1 areas.dar\nDAF 1 pavement.dar\n');
+  fs.writeFileSync(path.join(project,'lib','areas.dar'),'areas');
+  const parent=inspectProjectSummary(root,{}),child=inspectProjectSummary(project,{});
+  assert.equal(parent.dependencyWarnings[0]!.missing,false);
+  assert.equal(child.dependencyWarnings[0]!.missing,false);
+  assert.equal(parent.dependencyWarnings[0]!.candidate,path.join('road','lib','areas.dar'));
+  assert.equal(child.dependencyWarnings[0]!.candidate,path.join('lib','areas.dar'));
+  assert.equal(inspectProjectDirectory(root,{projectFile:'road/saved.pol'}).projects[0]!.projectDirectory,
+    fs.realpathSync(project));
+  const missing=inspectProjectDirectory(root,{}).dependencyWarnings.find(w=>w.file==='pavement.dar')!;
+  assert.equal(missing.missing,true);
+  assert.equal(missing.occurrences[0]!.tag,'DAF');
+  fs.writeFileSync(path.join(project,'lib','pavement.dar'),'pavement areas');
+  const resolved=inspectProjectDirectory(root,{}).dependencyWarnings.find(w=>w.file==='pavement.dar')!;
+  assert.equal(resolved.missing,false);
+  assert.equal(resolved.candidate,path.join('road','lib','pavement.dar'));
+});
+
 test('BIM inventory distinguishes saved axes, cartography, temporary POLs and missing longitudinal profiles',t=>{
   const root=base(t);
   for(const dir of ['project_pol','lib','tmp']) fs.mkdirSync(path.join(root,dir));

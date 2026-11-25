@@ -2,7 +2,7 @@
 
 Conecta un cliente de IA con ISTRAM/ISPOL mediante [Model Context Protocol](https://modelcontextprotocol.io/). El cliente solicita herramientas; el servidor consulta datos del proyecto y coordina las operaciones de ISTRAM.
 
-**Estado: versión candidata 0.3.0-rc.1 para revisión técnica.** Incluye 28 herramientas MCP y preparación de geometría para ejes, tuberías y contornos de cunetas, cajones, muros, túneles y detalles. La importación, cálculo y persistencia nativos siguen pendientes de un adaptador certificado.
+**Estado: versión candidata 0.3.0-rc.1 para revisión técnica.** Incluye 32 herramientas MCP y preparación de geometría para ejes, tuberías y contornos de cunetas, cajones, muros, túneles y detalles. La importación, cálculo y persistencia nativos siguen pendientes de un adaptador certificado.
 
 ## Revisar el proyecto
 
@@ -15,6 +15,7 @@ Conecta un cliente de IA con ISTRAM/ISPOL mediante [Model Context Protocol](http
 - [Guía breve para Buhodra Ingeniería](docs/REVIEW.md): recorrido del código y decisiones que necesitan contraste con el fabricante.
 - [Alcance del MCP](docs/SCOPE.md): áreas oficiales y orden de desarrollo.
 - [Plan vigente](docs/PLAN.md): pasos hasta la prueba con el proyecto abierto.
+- [Plan de pruebas de desempeño](docs/PLAN_PRUEBAS_DESEMPENO.md): comparación reproducible del tiempo de intervención y los controles de calidad.
 
 ## Qué incluye
 
@@ -26,11 +27,29 @@ Conecta un cliente de IA con ISTRAM/ISPOL mediante [Model Context Protocol](http
 
 El catálogo de comandos es una referencia documental. No implica que todos puedan ejecutarse mediante el MCP. No se distribuye un adaptador certificado.
 
+`project_inspect` distingue `no_project`, `temporary_only` y `project_found` mediante
+`projectStatus`, tanto en detalle como en resumen. Los dos primeros estados incluyen
+un aviso en `inspectionWarnings`: hay que completar la copia o seleccionar el POL
+guardado antes de intentar generar o exportar. Una inspección ejecutada correctamente
+(`ok: true`) no acredita que la carpeta contenga un proyecto exportable. Tampoco
+`project_found` certifica dependencias, geometría ni carga en la sesión. En resúmenes
+paginados, `dependencyWarningScope: returned_projects_only` indica que las advertencias
+corresponden únicamente a los proyectos de esa página.
+Los archivos situados bajo `tmp` o `res` se reconocen como temporales también dentro
+de subcarpetas. Cada proyecto incluye `projectDirectory`, la carpeta que contiene su
+POL, para contrastarla con la carpeta de trabajo de Istram. La búsqueda de tablas
+DAR (incluidas las tablas de firme referenciadas por `DAF`) contempla primero la carpeta `lib` del propio proyecto, conservando el aviso
+de que esa coincidencia todavía debe comprobarse en la sesión nativa.
+
 ## Cómo funciona
 
 Cliente de IA → servidor TypeScript → archivos del proyecto o trabajador Python → ISTRAM / IfcOpenShell.
 
 El servidor usa el SDK oficial de MCP, transporte stdio y argumentos validados. Las operaciones nativas se ejecutan en serie y comprueban el proyecto de destino. [Arquitectura](docs/ARCHITECTURE.md).
+
+El protocolo JSON hacia Python se lee explícitamente como UTF-8, también cuando
+Windows configura la entrada estándar con una página de códigos heredada. Esto
+conserva las tildes y otros caracteres Unicode en rutas y nombres de clases.
 
 ## Instalar y comprobar
 
@@ -55,6 +74,13 @@ Configurar el cliente con [examples/mcp.json](examples/mcp.json). Solo requiere 
 [Instalación en Codex para Windows](docs/CODEX_INSTALL.md): entorno Python aislado, registro stdio y comprobaciones.
 
 ## Prueba en ISTRAM
+
+Para IFC grandes, `ifc_validation_start` devuelve inmediatamente un `id`; consultar
+`operation_status` con ese identificador hasta su estado terminal. El trabajo conserva
+el resultado en el diario local y evita depender del tiempo máximo de una llamada MCP.
+`completed` significa que terminó la comprobación: revisar también `result.valid`.
+Mantener el IFC sin cambios mientras se valida. Los diagnósticos incluyen recuentos
+completos, categorías de esquema y hasta 100 muestras de longitud limitada.
 
 Para exportar IFC4.3 ADD2 con RCEclass y comprobar cobertura de códigos y
 asociaciones, véase la [guía IFC con RCEclass](docs/RCECLASS_IFC.md).

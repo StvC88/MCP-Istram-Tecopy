@@ -246,7 +246,30 @@ def validate_ifc(params):
     import ifcopenshell.util.element
     import ifcopenshell.util.unit
     model=ifcopenshell.open(params["filePath"])
-    logger=ifcopenshell.validate.json_logger()
+    # Real alignment exports can produce multi-megabyte EXPRESS diagnostics.
+    # Preserve the full failure count while bounding the MCP response and memory.
+    sample_limit = 100
+    text_limit = 2000
+    class BoundedLogger(ifcopenshell.validate.json_logger):
+        def __init__(self):
+            super().__init__()
+            self.total = 0
+            self.clipped = False
+            self.categories = collections.Counter()
+        def log(self, level, message, *args):
+            self.total += 1
+            category = str(self.state.get("attribute") or self.state.get("type") or level)[:160]
+            if category not in self.categories and len(self.categories) >= sample_limit:
+                category = "other"
+            self.categories[category] += 1
+            if len(self.statements) >= sample_limit:
+                return
+            rendered = message % args
+            instance = str(self.state.get("instance", ""))
+            self.clipped |= len(rendered) > text_limit or len(instance) > text_limit
+            self.statements.append({"level":level,"message":rendered[:text_limit],
+                                    "instance":instance[:text_limit]})
+    logger=BoundedLogger()
     ifcopenshell.validate.validate(model,logger,express_rules=True)
     counts=dict(collections.Counter(e.is_a() for e in model))
     projects=model.by_type("IfcProject")
@@ -339,14 +362,20 @@ def validate_ifc(params):
     if params.get("dgcLocation"):
         from dgc_location import audit
         location_audit = audit(model, params["dgcLocation"])
+    issue_count = logger.total + len(issues) - len(logger.statements)
+    sample_counts = {"issues":issue_count,"missingPsets":len(missing),
+                     "propertyIssues":len(property_issues),"geometry":len(geometry)}
     return {"schema":model.schema_identifier,"sha256":digest(params["filePath"]),"counts":counts,
         "projects":len(projects),"products":len(products),
         "alignments":alignments,
-        "lengthUnitToMetres":unit_scale,"projectedCrsNames":projected_crs,"propertyIssues":property_issues,
+        "lengthUnitToMetres":unit_scale,"projectedCrsNames":projected_crs,"propertyIssues":property_issues[:sample_limit],
         "georeferencing":[str(e) for e in optional_type("IfcMapConversion")],
         "units":[str(e.UnitsInContext) for e in projects],
-        "missingPsets":missing,"geometry":geometry,"geometryChecked":bool(params.get("geometry")),
-        "surfaceCoverage":surface_coverage,"issues":issues,"valid":not issues and not missing and not property_issues,
+        "missingPsets":missing[:sample_limit],"geometry":geometry[:sample_limit],"geometryChecked":bool(params.get("geometry")),
+        "diagnosticCounts":sample_counts,"sampleLimit":sample_limit,
+        "schemaIssueCategories":dict(logger.categories),
+        "diagnosticsTruncated":logger.clipped or any(n > sample_limit for n in sample_counts.values()),
+        "surfaceCoverage":surface_coverage,"issues":issues[:sample_limit],"valid":not issue_count and not missing and not property_issues,
         **({"dgcLocation":location_audit} if location_audit is not None else {})}
 
 def dispatch(method, params):
@@ -435,7 +464,9 @@ def dispatch(method, params):
 def main():
     request={}
     try:
-        request=json.loads(sys.stdin.readline())
+        # Node writes UTF-8 JSON. Windows' locale-dependent text wrapper may
+        # otherwise corrupt accented class names and paths before dispatch.
+        request=json.loads(sys.stdin.buffer.readline().decode("utf-8"))
         result=dispatch(request["method"],request.get("params",{}))
         response={"id":request.get("id"),"ok":True,"result":result}
     except Exception as error:

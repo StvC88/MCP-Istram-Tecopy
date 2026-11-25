@@ -129,6 +129,41 @@ En `ifc_validate`, `requiredSurfaceGeometry` permite exigir un número mínimo d
 El informe `surfaceCoverage` registra los productos encontrados y cuántos tienen caras. Se deben elegir las clases según el FCV aprobado y contrastar los recuentos con el inventario del proyecto. Un mínimo de uno comprueba presencia, no continuidad ni cobertura total.
 ## Control por teclado y revisión de obra en IFC
 
+### Observaciones de exportación nativa (Istram 26.09)
+
+Seleccionar IFC 4.3 ADD2 no activa por sí solo las alineaciones. En **BIM →
+Archivos → engranaje junto a IFC**, comprobar **Exportar alineaciones**,
+**Exportar perfiles** y **Exportar peraltes**, según el alcance. En un ensayo
+real, un primer archivo contenía geometría de obra y cero IfcAlignment. Al
+activar esas opciones se exportaron 28 alineaciones, correspondientes a los
+28 ejes con BIM generado; el POL contenía 84 ejes. No identificar la selección
+de la raíz con cobertura completa: comparar los tres inventarios.
+
+Esperar al cierre de la fase **Escribiendo archivo IFC**. Durante el cálculo
+el archivo de destino puede existir con cero bytes. Comprobar escritura
+terminada y reapertura antes de invocar el inventario o comunicar éxito.
+
+El ensayo también detectó ocho `Qto_ColumnBaseQuantities` vacíos. Sus mallas
+se podían leer, pero el esquema fallaba por la cardinalidad de `Quantities`.
+Registrar y corregir esos conjuntos sin inventar cantidades. Una vista 3D
+correcta no sustituye a `ifc_validate`.
+
+El validador devuelve hasta 100 muestras por lista de diagnósticos y de
+geometría. `diagnosticCounts` conserva los recuentos totales y
+`diagnosticsTruncated` avisa del recorte; los textos del validador de esquema
+se limitan a 2.000 caracteres. `valid` se calcula sobre todos los resultados,
+no sobre la muestra. Esto evita `OUTPUT_LIMIT` en exportaciones con perfiles
+y numerosos errores EXPRESS. Para el total de geometrías comprobadas usar
+`diagnosticCounts.geometry`, no la longitud de la muestra `geometry`.
+
+Los diálogos auxiliares pueden pertenecer a `Istram.exe` mientras el editor
+es `istramX.exe`. Si el clic informa de un proceso distinto, volver a observar
+el diálogo; no reutilizar coordenadas ni enviar texto a la zona gráfica.
+El diálogo de guardar admite el campo de nombre por teclado. Un aviso sobre
+pérdida de alineaciones sin guardar requiere resolver ese estado antes de
+cambiar de módulo. Cancelarlo preserva los cambios; no equivale a autorización
+para descartarlos.
+
 En la instalación de Istram consultada, `lib/comandos.cfg` contiene el diccionario de teclado. La ayuda instalada menciona, por ejemplo, el comando `Spixe` en **Preferencias**. La ventana de Virtual 3D inspeccionada mediante `session_snapshot` mostró el visor y sus controles; la inspección no identificó un campo de consola para ejecutar la exportación IFC.
 
 1. Consultar varios códigos en una sola llamada a `istram_command_catalog` con `{"exactCodes":["n","m","V2D","V3D","pk","BS","bs"]}`. La respuesta conserva el código original e indica cuáles faltan en la instalación. En el diccionario revisado, `n` cuenta elementos, `m` encuadra, `V2D` y `V3D` cambian de vista y `pk` va a un PK. `BS` busca símbolos y `bs` los borra. Un código encontrado sigue necesitando el módulo y el foco correctos. Para descubrir un código por descripción, usar `query`.
@@ -149,6 +184,26 @@ Para el cliente JS de este repositorio, el tiempo de espera es el segundo argume
 La llamada MCP de prueba tardó 151 segundos para 79 secciones por lado. El posprocesado de clasificación y la reapertura son tiempos adicionales. No se dispone de una medición manual comparable.
 
 En la prueba nativa posterior al reinicio, Generar Proyecto llegó al eje 6 y mostró un aviso de longitudinal ausente antes del eje ensayado. Registrar el texto del aviso obtenido por session_snapshot; aceptar el mensaje no acredita que se haya recuperado esa rasante. En la variante IFC reabierta se verificaron 395 vértices desplazados y 2.244 caras por barandilla, con la malla de los postes intacta.
+
+### Incidencias reproducidas en La Pobla (2026-11-25)
+
+El cálculo con `Incluir firmes: Sí`, seguido de generación BIM, aumentó las mallas
+exportadas de 277 a 493. El IFC con perfiles conserva 28 alineaciones; el POL
+contiene 84 ejes y 31 alzados, de los que tres no generaron B1M. El cálculo avisó
+de la dependencia ausente `C864_07a.dip`. Estos resultados no acreditan cobertura total.
+
+La plantilla ATF lee las tablas de clasificación por índice. Cargarla antes de
+configurar las siete tablas FCV puede escribir nombres de clase Istram como códigos
+RCE. Incluso al importar un perfil con asignaciones vacías, las clases fusionadas
+pueden conservar esos nombres en las tablas sin definir. Comprobar siempre códigos
+contra FCT, asociaciones y descripciones tras exportar; la presencia del Pset no basta.
+
+El IFC con firmes produjo 69.862 incidencias de esquema, entre ellas DistanceAlong,
+IfcOpenCrossProfileDef.CorrectProfileType, medidas no negativas y cantidades vacías.
+La llamada síncrona agotó el límite del cliente a 300 segundos; la misma comprobación
+local terminó en 335 segundos. Usar `ifc_validation_start` y `operation_status` para
+estos modelos. El límite del trabajador sigue siendo 30 minutos. El nuevo flujo no
+corrige por sí mismo el IFC ni verifica el diseño.
 
 ### Materiales de firme en IFC 4.3 ADD2
 

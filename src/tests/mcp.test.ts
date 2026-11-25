@@ -19,6 +19,10 @@ test('stdio protocol lists tools and resources, validates arguments, exposes hon
     fs.mkdirSync(lib,{recursive:true});
     fs.writeFileSync(path.join(lib,'comandos.cfg'),'#1\n2\nbs bs Borra simbolos\nBS BS Busca simbolos\n');
     await client.connect(transport);
+    const emptyInventory=await client.callTool({name:'project_inspect',arguments:{projectPath:dir,summary:true}});
+    const emptyData=JSON.parse(emptyInventory.content.find(c=>c.type==='text')!.text).data;
+    assert.equal(emptyData.projectStatus,'no_project');
+    assert.match(emptyData.inspectionWarnings[0],/NO_PROJECT_POL/);
     const exact=await client.callTool({name:'istram_command_catalog',arguments:{exactCodes:['BS','V3D']}});
     const catalog=JSON.parse(exact.content.find(c=>c.type==='text')!.text).data;
     assert.deepEqual(catalog.commands.map((c:{code:string})=>c.code),['BS']);
@@ -41,6 +45,21 @@ test('stdio protocol lists tools and resources, validates arguments, exposes hon
     assert.equal(JSON.parse(drain.content.find(c=>c.type==='text')!.text).data.valid,false);
     const missingJob=await client.callTool({name:'operation_status',arguments:{operationId:crypto.randomUUID()}});
     assert.equal(JSON.parse(missingJob.content.find(c=>c.type==='text')!.text).error.code,'OPERATION_NOT_FOUND');
+    const validationArgs={requestId:'async-invalid-file',filePath:path.join(dir,'missing.ifc')};
+    const started=JSON.parse((await client.callTool({name:'ifc_validation_start',arguments:validationArgs})).content.find(c=>c.type==='text')!.text).data;
+    assert.equal(started.state,'pending');
+    const replay=JSON.parse((await client.callTool({name:'ifc_validation_start',arguments:validationArgs})).content.find(c=>c.type==='text')!.text).data;
+    assert.equal(replay.id,started.id);
+    const conflict=JSON.parse((await client.callTool({name:'ifc_validation_start',arguments:{...validationArgs,geometry:true}})).content.find(c=>c.type==='text')!.text);
+    assert.equal(conflict.error.code,'IDEMPOTENCY_CONFLICT');
+    let validationJob=started;
+    for(let n=0;n<100&&['pending','running'].includes(validationJob.state);n++){
+      await new Promise(resolve=>setTimeout(resolve,100));
+      validationJob=JSON.parse((await client.callTool({name:'operation_status',arguments:{operationId:started.id}})).content.find(c=>c.type==='text')!.text).data;
+    }
+    assert.equal(validationJob.state,'failed');
+    assert.ok(validationJob.error.code);
+    assert.equal(validationJob.result,undefined);
     const invalidUsage=await client.callTool({name:'usage_capabilities',arguments:{offset:-1}});
     assert.equal(invalidUsage.isError,true);
     const status=await client.callTool({name:'istram_detect',arguments:{}});
